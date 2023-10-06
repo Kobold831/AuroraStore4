@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+        <Preference
+            app:iconSpaceReserved="false"
+            android:key="pref_other_update_mode"
+            android:title="@string/pref_cpad_other_title_mode" />
+
+        <Preference
+            app:iconSpaceReserved="false"
+            android:title="@string/pref_cpad_other_title_disable"
+            android:key="pref_other_owner_disable" />
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:selectable="false"
+            android:key="pref_other_now_owner_package" />
+</PreferenceScreen>

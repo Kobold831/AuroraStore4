@@ -1,0 +1,9 @@
+[
+  {
+    "id": "0",
+    "title": "セッションインストーラー",
+    "subtitle": "バンドル / 分割APKセッションインストーラー",
+    "description": "Android 5.0以降を実行するデバイスに最適",
+    "url": "https://developer.android.com/reference/android/content/pm/PackageInstaller.Session"
+  }
+]
