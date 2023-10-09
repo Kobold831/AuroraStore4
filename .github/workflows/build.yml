@@ -41,5 +41,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
-          name: AuroraStore4_(v${{ env.version }}@${{ env.commit }})
+          name: AuroraStore4_(Ver.${{ env.version }}@${{ env.commit }})
           path: app/build/outputs/apk/**/app-*.apk
