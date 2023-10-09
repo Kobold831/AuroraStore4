@@ -29,9 +29,6 @@ import com.aurora.store.R
 import com.aurora.store.util.PackageUtil
 import com.aurora.store.util.Preferences
 import com.aurora.store.util.Preferences.PREFERENCE_INSTALLER_ID
-import com.topjohnwu.superuser.Shell
-import rikka.shizuku.Shizuku
-
 open class AppInstaller private constructor(var context: Context) {
 
     companion object {

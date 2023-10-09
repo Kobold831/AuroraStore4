@@ -33,7 +33,6 @@ import com.aurora.store.data.service.NotificationService
 import com.aurora.store.util.CommonUtil
 import com.aurora.store.util.PackageUtil
 import com.tonyodev.fetch2.Fetch
-import org.lsposed.hiddenapibypass.HiddenApiBypass
 
 class AuroraApplication : Application() {
 
@@ -45,12 +44,6 @@ class AuroraApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-
-        // TODO: Only exempt required APIs
-        // Required for Shizuku installer
-        if (isPAndAbove()) {
-            HiddenApiBypass.addHiddenApiExemptions("")
-        }
 
         //Create Notification Channels : General & Alert
         createNotificationChannel()

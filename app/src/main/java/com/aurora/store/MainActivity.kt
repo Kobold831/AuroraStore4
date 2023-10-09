@@ -144,18 +144,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        /* Check self update only for stable release, skip debug & nightlies*/
-//        if (BuildConfig.APPLICATION_ID == Constants.APP_ID) viewModel.checkSelfUpdate(this)
-//        this.lifecycleScope.launch {
-//            viewModel.selfUpdateAvailable.collect {
-//                if (it != null) {
-//                    showUpdatesSheet(it)
-//                } else {
-//                    Log.i("No self-update available")
-//                }
-//            }
-//        }
-
         // Handle quick exit from back actions
         val defaultTab = when (Preferences.getInteger(this, PREFERENCE_DEFAULT_SELECTED_TAB)) {
             1 -> R.id.gamesContainerFragment
@@ -257,14 +245,6 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION))
         }
     }
-
-//    private fun showUpdatesSheet(selfUpdate: SelfUpdate) {
-//        if (!supportFragmentManager.isDestroyed) {
-//            val sheet = SelfUpdateSheet.newInstance(selfUpdate)
-//            sheet.isCancelable = false
-//            sheet.show(supportFragmentManager, SelfUpdateSheet.TAG)
-//        }
-//    }
 
     private fun isIntroDone(): Boolean {
         return Preferences.getBoolean(this@MainActivity, Preferences.PREFERENCE_INTRO)
