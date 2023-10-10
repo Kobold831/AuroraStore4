@@ -41,14 +41,12 @@ android {
 
     defaultConfig {
         applicationId = "com.aurora.store"
-        minSdk = 22
+        minSdk = 28
         //noinspection ExpiredTargetSdkVersion
         targetSdk = 22
 
         versionCode = 9
         versionName = "1.3.0"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
@@ -79,13 +77,14 @@ android {
             }
         }
 
-        register("nightly") {
-            initWith(getByName("release"))
-            applicationIdSuffix = ".nightly"
-        }
-
         debug {
-            applicationIdSuffix = ".debug"
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
@@ -164,28 +163,11 @@ dependencies {
     //EventBus
     implementation("org.greenrobot:eventbus:3.3.1")
 
-    //Lib-SU
-    implementation("com.github.topjohnwu.libsu:core:5.0.5")
-
     //Love <3
     implementation("com.gitlab.AuroraOSS:gplayapi:3.2.0")
 
     //Browser
     implementation("androidx.browser:browser:1.6.0")
-
-    //Shizuku
-    val shizuku_version = "13.1.1"
-    compileOnly("dev.rikka.hidden:stub:4.2.0")
-    implementation("dev.rikka.tools.refine:runtime:4.3.0")
-    implementation("dev.rikka.shizuku:api:${shizuku_version}")
-    implementation("dev.rikka.shizuku:provider:${shizuku_version}")
-
-    implementation("org.lsposed.hiddenapibypass:hiddenapibypass:4.3")
-
-    //Test
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     //WorkManager
     implementation("androidx.work:work-runtime-ktx:2.8.1")
