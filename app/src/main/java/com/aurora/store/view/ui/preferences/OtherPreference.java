@@ -121,7 +121,7 @@ public class OtherPreference extends PreferenceFragmentCompat {
                         }
                     }
                     case 2 -> {
-                        if (bindDeviceOwnerService()) {
+                        if (tryBindDeviceOwnerService()) {
                             Common.SET_UPDATE_MODE(requireActivity(), 2);
                             listView.invalidateViews();
                         } else {
@@ -151,7 +151,7 @@ public class OtherPreference extends PreferenceFragmentCompat {
         }
     }
 
-    ServiceConnection mServiceConnection = new ServiceConnection() {
+    ServiceConnection mDeviceOwnerServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             mDeviceOwnerService = IDeviceOwnerService.Stub.asInterface(iBinder);
@@ -159,13 +159,12 @@ public class OtherPreference extends PreferenceFragmentCompat {
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            mDeviceOwnerService = null;
         }
     };
 
-    public boolean bindDeviceOwnerService() {
+    public boolean tryBindDeviceOwnerService() {
         try {
-            return requireActivity().bindService(Common.BIND_CUSTOMIZE_TOOL, mServiceConnection, Context.BIND_AUTO_CREATE);
+            return requireActivity().bindService(Common.CUSTOMIZE_TOOL_SERVICE, mDeviceOwnerServiceConnection, Context.BIND_AUTO_CREATE);
         } catch (Exception ignored) {
             return false;
         }

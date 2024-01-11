@@ -19,6 +19,8 @@
 
 package com.aurora
 
+import android.content.Intent
+
 object Constants {
     const val INT_EXTRA = "INT_EXTRA"
     const val FLOAT_EXTRA = "FLOAT_EXTRA"
@@ -59,11 +61,19 @@ object Constants {
     const val NAVIGATION_UPDATES = "NAVIGATION_UPDATES"
 
     //CPAD
-    const val CPAD_REQUEST_UPDATE = 10
+    const val REQUEST_UPDATE = 0
+
+    const val REQUEST_DOWNLOAD_UPDATE_CHECK = 0
+    const val REQUEST_DOWNLOAD_SUPPORT_CHECK = 1
+    const val REQUEST_DOWNLOAD_APK = 2
+
+    const val URL_CHECK = "https://raw.githubusercontent.com/Kobold831/Server/main/production/json/Check.json"
+    const val URL_UPDATE_INFO = "https://docs.google.com/document/d/19GmLgF7rf6WblrY8MCJjqTKbSwLqMRzH_MyvMR38d2o"
+    const val URL_UPDATE = ""
+    const val URL_WIKI_DISCORD = ""
+    const val URL_WIKI_MAIN = ""
+    const val URL_GITHUB = "https://github.com/Kobold831/Aurorastore4"
+
     const val CPAD_SETTINGS_NOT_COMPLETED = false
     const val CPAD_SETTINGS_COMPLETED = true
-    const val CPAD_UPDATE_CHECK_URL = "https://raw.githubusercontent.com/Kobold831/Server/main/AuroraStore_Update.xml"
-    const val CPAD_SUPPORT_CHECK_URL = "https://raw.githubusercontent.com/Kobold831/Server/main/AuroraStore_Support.xml"
-    const val CPAD_UPDATE_INFO_URL = "https://docs.google.com/document/d/19GmLgF7rf6WblrY8MCJjqTKbSwLqMRzH_MyvMR38d2o"
-    const val CPAD_WIKI_URL = "https://is.gd/GLTPxY"
 }

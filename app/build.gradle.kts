@@ -45,8 +45,8 @@ android {
         //noinspection ExpiredTargetSdkVersion
         targetSdk = 22
 
-        versionCode = 9
-        versionName = "1.3.0"
+        versionCode = 10
+        versionName = "1.4.0"
     }
 
     signingConfigs {
@@ -121,7 +121,7 @@ dependencies {
     implementation("com.google.protobuf:protobuf-javalite:3.24.2")
 
     //Google's Goodies
-    implementation("com.google.android.material:material:1.9.0")
+    implementation("com.google.android.material:material:1.11.0")
     implementation("com.google.code.gson:gson:2.10.1")
 
     //AndroidX
@@ -133,14 +133,20 @@ dependencies {
 
     //Arch LifeCycle
     val life_version = "2.6.2"
+    //noinspection GradleDependency
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:$life_version")
+    //noinspection GradleDependency
     implementation("androidx.lifecycle:lifecycle-service:$life_version")
+    //noinspection GradleDependency
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$life_version")
+    //noinspection GradleDependency
     implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:$life_version")
 
     //Arch Navigation
     val nav_version = "2.7.3"
+    //noinspection GradleDependency
     implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
+    //noinspection GradleDependency
     implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
 
     //Coil
@@ -167,10 +173,10 @@ dependencies {
     implementation("com.gitlab.AuroraOSS:gplayapi:3.2.0")
 
     //Browser
-    implementation("androidx.browser:browser:1.6.0")
+    implementation("androidx.browser:browser:1.7.0")
 
     //WorkManager
-    implementation("androidx.work:work-runtime-ktx:2.8.1")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     // LeakCanary
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.12")

@@ -1,8 +1,6 @@
 /*
  * Aurora Store
  *  Copyright (C) 2021, Rahul Kumar Patel <whyorean@gmail.com>
- *  Copyright (C) 2022, The Calyx Institute
- *  Copyright (C) 2023, grrfe <grrfe@420blaze.it>
  *
  *  Aurora Store is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,12 +17,12 @@
  *
  */
 
-plugins {
-    id("com.android.application") version "8.1.3" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.10" apply false
-    id("org.jetbrains.kotlin.plugin.parcelize") version "1.9.10" apply false
-    id("com.google.devtools.ksp") version "1.9.10-1.0.13" apply false
-    id("androidx.navigation.safeargs.kotlin") version "2.6.0" apply false
-    id("org.jlleitschuh.gradle.ktlint") version "11.6.0" apply false
-    id("dev.rikka.tools.refine") version "4.3.0" apply false
+package com.aurora.store.data.event;
+
+import java.util.EventListener;
+
+public interface DownloadEventListener extends EventListener {
+	void onDownloadComplete(int reqCode);
+	void onDownloadError();
+	void onConnectionError();
 }

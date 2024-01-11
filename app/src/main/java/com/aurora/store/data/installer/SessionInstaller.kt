@@ -171,21 +171,20 @@ class SessionInstaller(context: Context) : InstallerBase(context) {
         return uri
     }
 
-    var mServiceConnection: ServiceConnection = object : ServiceConnection {
+    var mDeviceOwnerServiceConnection: ServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(componentName: ComponentName, iBinder: IBinder) {
             mDeviceOwnerService = IDeviceOwnerService.Stub.asInterface(iBinder)
         }
 
         override fun onServiceDisconnected(componentName: ComponentName) {
-            mDeviceOwnerService = null
         }
     }
 
     fun bindDeviceOwnerService(): Boolean {
         try {
             return context.bindService(
-                Common.BIND_CUSTOMIZE_TOOL,
-                mServiceConnection,
+                Common.CUSTOMIZE_TOOL_SERVICE,
+                mDeviceOwnerServiceConnection,
                 Context.BIND_AUTO_CREATE
             )
         } catch (ignored: Exception) {

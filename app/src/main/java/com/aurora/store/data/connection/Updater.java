@@ -19,7 +19,6 @@
 
 package com.aurora.store.data.connection;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -31,9 +30,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -41,8 +38,6 @@ import android.os.RemoteException;
 import com.aurora.Constants;
 import com.aurora.extensions.ToastKt;
 import com.aurora.store.R;
-import com.aurora.store.data.event.UpdateEventListener;
-import com.aurora.store.data.event.UpdateEventListenerList;
 import com.aurora.store.data.installer.InstallerService;
 import com.aurora.store.util.Common;
 import com.saradabar.cpadcustomizetool.data.service.IDeviceOwnerService;
@@ -73,62 +68,10 @@ import javax.xml.parsers.ParserConfigurationException;
 public class Updater {
 
     IDeviceOwnerService mDeviceOwnerService;
-    private final UpdateEventListenerList updateListeners;
-    private final Activity activity;
+    Activity activity;
 
-    public Updater(Activity mActivity) {
-        activity = mActivity;
-        updateListeners = new UpdateEventListenerList();
-        updateListeners.addEventListener((UpdateEventListener) activity);
-    }
-
-    public static class Result {
-        public final int versionCode;
-        public final String msg;
-
-        public Result(int versionCode, String msg) {
-            this.versionCode = versionCode;
-            this.msg = msg;
-        }
-    }
-
-    private int getCurrentVersionInfo() throws Exception {
-        return activity.getPackageManager().getPackageInfo(activity.getPackageName(), PackageManager.GET_META_DATA).versionCode;
-    }
-
-    private Result getLatestVersionInfo() {
-        HashMap<String, String> map = parseUpdateXml(Constants.CPAD_UPDATE_CHECK_URL);
-        if (map != null) {
-            Common.DOWNLOAD_FILE_URL = map.get("url");
-            return new Result(Integer.parseInt(map.get("versionCode")), map.get("description"));
-        } else return new Result(-99, null);
-    }
-
-    public void updateCheck() {
-        new updateCheckTask().execute();
-    }
-
-    @SuppressLint("StaticFieldLeak")
-    private class updateCheckTask extends AsyncTask<Object, Object, Object> {
-
-        @Override
-        protected Object doInBackground(Object... arg0) {
-            try {
-                if (getLatestVersionInfo().versionCode == -99) return -1;
-                if (getCurrentVersionInfo() < getLatestVersionInfo().versionCode)
-                    return getLatestVersionInfo().msg;
-                else return 0;
-            } catch (Exception ignored) {
-                return -1;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Object result) {
-            if (result.equals(-1)) updateListeners.connectionErrorNotify();
-            if (result.equals(0)) updateListeners.updateUnavailableNotify();
-            else updateListeners.updateAvailableNotify((String) result);
-        }
+    public Updater(Activity act) {
+        activity = act;
     }
 
     public void installApk() {
@@ -140,7 +83,7 @@ public class Updater {
                         .setMessage(R.string.dialog_cpad_update_caution)
                         .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog, which) -> {
                             try {
-                                activity.startActivityForResult(new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.CPAD_WIKI_URL)), Constants.CPAD_REQUEST_UPDATE);
+                                activity.startActivityForResult(new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.URL_WIKI_MAIN)), Constants.REQUEST_UPDATE);
                             } catch (ActivityNotFoundException ignored) {
                                 ToastKt.toast(activity, R.string.toast_cpad_unknown_activity);
                                 activity.finish();
@@ -169,7 +112,7 @@ public class Updater {
                 }
                 break;
             case 2:
-                if (bindDeviceOwnerService()) {
+                if (isBindDeviceOwnerService()) {
                     oInstall();
                 } else {
                     new AlertDialog.Builder(activity)
@@ -182,7 +125,7 @@ public class Updater {
         }
     }
 
-    ServiceConnection mServiceConnection = new ServiceConnection() {
+    ServiceConnection mDeviceOwnerServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             mDeviceOwnerService = IDeviceOwnerService.Stub.asInterface(iBinder);
@@ -190,13 +133,12 @@ public class Updater {
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            mDeviceOwnerService = null;
         }
     };
 
-    public boolean bindDeviceOwnerService() {
+    public boolean isBindDeviceOwnerService() {
         try {
-            return activity.bindService(Common.BIND_CUSTOMIZE_TOOL, mServiceConnection, Context.BIND_AUTO_CREATE);
+            return activity.bindService(Common.CUSTOMIZE_TOOL_SERVICE, mDeviceOwnerServiceConnection, Context.BIND_AUTO_CREATE);
         } catch (Exception ignored) {
             return false;
         }
@@ -215,7 +157,7 @@ public class Updater {
     private void oInstall() {
         Runnable runnable = () -> {
             try {
-                if (!mDeviceOwnerService.installPackages("", Collections.singletonList(Uri.parse(Uri.fromFile(new File("/external_files/Android/data/com.aurora.store/cache/update.apk")).getPath())))) {
+                if (!mDeviceOwnerService.installPackages("", Collections.singletonList(Uri.parse(Uri.fromFile(new File(activity.getExternalCacheDir(), "update.apk")).getPath())))) {
                     new AlertDialog.Builder(activity)
                             .setCancelable(false)
                             .setMessage(R.string.dialog_cpad_error)
@@ -310,41 +252,5 @@ public class Updater {
             builder.append(theAlphaNumericS.charAt(myindex));
         }
         return builder.toString();
-    }
-
-    private HashMap<String, String> parseUpdateXml(String url) {
-
-        HashMap<String, String> map = new HashMap<>();
-        HttpURLConnection mHttpURLConnection;
-
-        try {
-            mHttpURLConnection = (HttpURLConnection) new URL(url).openConnection();
-            mHttpURLConnection.setConnectTimeout(5000);
-            InputStream is = mHttpURLConnection.getInputStream();
-            BufferedInputStream bis = new BufferedInputStream(is);
-            DocumentBuilderFactory document_builder_factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder document_builder = document_builder_factory.newDocumentBuilder();
-            Document document = document_builder.parse(bis);
-            Element root = document.getDocumentElement();
-
-            if (root.getTagName().equals("update")) {
-                NodeList nodelist = root.getChildNodes();
-                for (int j = 0; j < nodelist.getLength(); j++) {
-                    Node node = nodelist.item(j);
-                    if (node.getNodeType() == Node.ELEMENT_NODE) {
-                        Element element = (Element) node;
-                        String name = element.getTagName();
-                        String value = element.getTextContent().trim();
-                        map.put(name, value);
-                    }
-                }
-            }
-            return map;
-        } catch (SocketTimeoutException | MalformedURLException ignored) {
-            return null;
-        } catch (IOException | SAXException | ParserConfigurationException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 }

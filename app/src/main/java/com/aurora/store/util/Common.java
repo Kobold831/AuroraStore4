@@ -27,8 +27,7 @@ import androidx.preference.PreferenceManager;
 
 public class Common {
 
-    public static Intent BIND_CUSTOMIZE_TOOL = new Intent("com.saradabar.cpadcustomizetool.data.service.DeviceOwnerService").setPackage("com.saradabar.cpadcustomizetool");
-    public static String DOWNLOAD_FILE_URL;
+    public static Intent CUSTOMIZE_TOOL_SERVICE = new Intent("com.saradabar.cpadcustomizetool.data.service.DeviceOwnerService").setPackage("com.saradabar.cpadcustomizetool");
 
     /* データ管理 */
     public static void SET_SETTINGS_FLAG(boolean flag, Context context) {

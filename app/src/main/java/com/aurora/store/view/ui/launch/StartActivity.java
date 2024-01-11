@@ -45,60 +45,65 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.aurora.Constants;
 import com.aurora.extensions.ToastKt;
+import com.aurora.store.BuildConfig;
 import com.aurora.store.MainActivity;
 import com.aurora.store.R;
 import com.aurora.store.data.connection.AsyncFileDownload;
-import com.aurora.store.data.connection.Checker;
 import com.aurora.store.data.connection.Updater;
-import com.aurora.store.data.event.UpdateEventListener;
+import com.aurora.store.data.event.DownloadEventListener;
 import com.aurora.store.data.handler.ProgressHandler;
 import com.aurora.store.util.Common;
+import com.aurora.store.util.Variables;
 import com.aurora.store.view.epoxy.views.UpdateModeView;
 import com.saradabar.cpadcustomizetool.data.service.IDeviceOwnerService;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class StartActivity extends AppCompatActivity implements UpdateEventListener {
+public class StartActivity extends AppCompatActivity implements DownloadEventListener {
 
-    IDeviceOwnerService iDOS;
-    DevicePolicyManager dPM;
-    ProgressDialog pd;
+    IDeviceOwnerService mDeviceOwnerService;
+    DevicePolicyManager dpm;
+    ProgressDialog loadingDialog;
 
     @Override
     public final void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        dPM = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+        dpm = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         /* ネットワークチェック */
-        if (!isNetWork()) {
-            netWorkError();
-            return;
-        }
-        updateCheck();
+        if (!isNetworkState()) {
+            networkError();
+        } else updateCheck();
     }
 
     /* ネットワークの接続を確認 */
-    private boolean isNetWork() {
+    private boolean isNetworkState() {
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         return (networkInfo != null && networkInfo.isConnected());
     }
 
     /* ネットワークエラー */
-    private void netWorkError() {
+    private void networkError() {
         new AlertDialog.Builder(this)
                 .setCancelable(false)
                 .setTitle(R.string.dialog_cpad_title_start_error)
                 .setMessage(R.string.dialog_cpad_error_wifi)
                 .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> {
-                    if (dPM.isDeviceOwnerApp(getPackageName())) {
+                    if (dpm.isDeviceOwnerApp(getPackageName())) {
                         new AlertDialog.Builder(this)
                                 .setCancelable(false)
                                 .setMessage(R.string.dialog_cpad_clear_device_owner)
                                 .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog2, which2) -> {
-                                    dPM.clearDeviceOwnerApp(getPackageName());
+                                    dpm.clearDeviceOwnerApp(getPackageName());
                                     finishAndRemoveTask();
                                 })
                                 .setNegativeButton(R.string.dialog_cpad_common_no, (dialog2, which2) -> finishAndRemoveTask())
@@ -110,43 +115,97 @@ public class StartActivity extends AppCompatActivity implements UpdateEventListe
 
     private void updateCheck() {
         showLoadingDialog();
-        new Updater(this).updateCheck();
+        new AsyncFileDownload(this, "https://raw.githubusercontent.com/Kobold831/Server/main/production/json/Check.json", new File(new File(getExternalCacheDir(), "Check.json").getPath()), Constants.REQUEST_DOWNLOAD_UPDATE_CHECK).execute();
     }
 
     private void supportCheck() {
-        new Checker(this, Constants.CPAD_SUPPORT_CHECK_URL).supportCheck();
+        showLoadingDialog();
+        new AsyncFileDownload(this, "https://raw.githubusercontent.com/Kobold831/Server/main/production/json/Check.json", new File(new File(getExternalCacheDir(), "Check.json").getPath()), Constants.REQUEST_DOWNLOAD_SUPPORT_CHECK).execute();
     }
 
-    public void onSupportAvailable() {
-        cancelLoadingDialog();
-        showSupportDialog();
+    public JSONObject parseJson() throws JSONException, IOException {
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(getExternalCacheDir(), "Check.json").getPath()));
+        JSONObject json;
+
+        StringBuilder data = new StringBuilder();
+        String str = bufferedReader.readLine();
+
+        while(str != null){
+            data.append(str);
+            str = bufferedReader.readLine();
+        }
+
+        json = new JSONObject(data.toString());
+
+        bufferedReader.close();
+
+        return json;
     }
 
-    public void onSupportUnavailable() {
-        cancelLoadingDialog();
-        if (checkModel()) {
-            if (!dPM.isDeviceOwnerApp(getPackageName())) {
-                if (bindDeviceOwnerService()) {
-                    Runnable runnable = this::isDeviceOwner;
-                    new Handler().postDelayed(runnable, 1000);
-                } else {
-                    new AlertDialog.Builder(this)
-                            .setCancelable(false)
-                            .setTitle(R.string.dialog_cpad_title_start_error)
-                            .setMessage(R.string.dialog_cpad_error_failure_bind)
-                            .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> finishAndRemoveTask())
-                            .show();
+    @Override
+    public void onDownloadComplete(int reqCode) {
+        switch (reqCode) {
+            case Constants.REQUEST_DOWNLOAD_UPDATE_CHECK:
+                try {
+                    JSONObject jsonObj1 = parseJson();
+                    JSONObject jsonObj2 = jsonObj1.getJSONObject("as");
+                    JSONObject jsonObj3 = jsonObj2.getJSONObject("update");
+                    Variables.DOWNLOAD_FILE_URL = jsonObj3.getString("url");
+
+                    if (jsonObj3.getInt("versionCode") > BuildConfig.VERSION_CODE) {
+                        cancelLoadingDialog();
+                        showUpdateDialog(jsonObj3.getString("description"));
+                    } else {
+                        cancelLoadingDialog();
+                        supportCheck();
+                    }
+                } catch (JSONException | IOException ignored) {
                 }
-            } else {
-                if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
-                    startCheck();
-                } else {
-                    startActivity(new Intent(this, MainActivity.class));
-                    finish();
+                break;
+            case Constants.REQUEST_DOWNLOAD_SUPPORT_CHECK:
+                try {
+                    JSONObject jsonObj1 = parseJson();
+                    JSONObject jsonObj2 = jsonObj1.getJSONObject("as");
+                    JSONObject jsonObj3 = jsonObj2.getJSONObject("support");
+
+                    if (jsonObj3.getInt("supportCode") == 0) {
+                        cancelLoadingDialog();
+                        if (supportModelCheck()) {
+                            if (!dpm.isDeviceOwnerApp(getPackageName())) {
+                                if (tryBindDeviceOwnerService()) {
+                                    Runnable runnable = this::isDeviceOwner;
+                                    new Handler().postDelayed(runnable, 1000);
+                                } else {
+                                    new AlertDialog.Builder(this)
+                                            .setCancelable(false)
+                                            .setTitle(R.string.dialog_cpad_title_start_error)
+                                            .setMessage(R.string.dialog_cpad_error_failure_bind)
+                                            .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> finishAndRemoveTask())
+                                            .show();
+                                }
+                            } else {
+                                if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
+                                    WarningDialog();
+                                } else {
+                                    startActivity(new Intent(this, MainActivity.class));
+                                    finish();
+                                }
+                            }
+                        } else {
+                            supportModelError();
+                        }
+                    } else {
+                        cancelLoadingDialog();
+                        showSupportDialog();
+                    }
+                } catch (JSONException | IOException ignored) {
                 }
-            }
-        } else {
-            errorNotNEO();
+                break;
+            case Constants.REQUEST_DOWNLOAD_APK:
+                new Handler().post(() -> new Updater(this).installApk());
+                break;
+            default:
+                break;
         }
     }
 
@@ -155,17 +214,52 @@ public class StartActivity extends AppCompatActivity implements UpdateEventListe
         cancelLoadingDialog();
         new AlertDialog.Builder(this)
                 .setCancelable(false)
-                .setTitle(R.string.dialog_cpad_title_update)
-                .setMessage(R.string.dialog_cpad_error)
-                .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog, which) -> finishAffinity())
+                .setTitle(R.string.dialog_cpad_title_start_error)
+                .setMessage("ダウンロードに失敗しました\nネットワークが安定しているか確認してください")
+                .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> {
+                    if (dpm.isDeviceOwnerApp(getPackageName())) {
+                        new AlertDialog.Builder(this)
+                                .setCancelable(false)
+                                .setMessage(R.string.dialog_cpad_clear_device_owner)
+                                .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog2, which2) -> {
+                                    dpm.clearDeviceOwnerApp(getPackageName());
+                                    finishAndRemoveTask();
+                                })
+                                .setNegativeButton(R.string.dialog_cpad_common_no, (dialog2, which2) -> finishAndRemoveTask())
+                                .show();
+                    } else finishAndRemoveTask();
+                })
+                .show();
+    }
+
+    @Override
+    public void onConnectionError() {
+        cancelLoadingDialog();
+        new AlertDialog.Builder(this)
+                .setCancelable(false)
+                .setTitle(R.string.dialog_cpad_title_start_error)
+                .setMessage(R.string.dialog_cpad_error_connection)
+                .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> {
+                    if (dpm.isDeviceOwnerApp(getPackageName())) {
+                        new AlertDialog.Builder(this)
+                                .setCancelable(false)
+                                .setMessage(R.string.dialog_cpad_clear_device_owner)
+                                .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog2, which2) -> {
+                                    dpm.clearDeviceOwnerApp(getPackageName());
+                                    finishAndRemoveTask();
+                                })
+                                .setNegativeButton(R.string.dialog_cpad_common_no, (dialog2, which2) -> finishAndRemoveTask())
+                                .show();
+                    } else finishAndRemoveTask();
+                })
                 .show();
     }
 
     public void isDeviceOwner() {
         try {
-            if (iDOS.isDeviceOwnerApp()) {
+            if (mDeviceOwnerService.isDeviceOwnerApp()) {
                 if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
-                    startCheck();
+                    WarningDialog();
                 } else {
                     startActivity(new Intent(this, MainActivity.class));
                     finish();
@@ -188,63 +282,23 @@ public class StartActivity extends AppCompatActivity implements UpdateEventListe
         }
     }
 
-    ServiceConnection sC = new ServiceConnection() {
+    ServiceConnection mDeviceOwnerServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            iDOS = IDeviceOwnerService.Stub.asInterface(iBinder);
+            mDeviceOwnerService = IDeviceOwnerService.Stub.asInterface(iBinder);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            iDOS = null;
         }
     };
 
-    public boolean bindDeviceOwnerService() {
+    public boolean tryBindDeviceOwnerService() {
         try {
-            return bindService(Common.BIND_CUSTOMIZE_TOOL, sC, Context.BIND_AUTO_CREATE);
+            return bindService(Common.CUSTOMIZE_TOOL_SERVICE, mDeviceOwnerServiceConnection, Context.BIND_AUTO_CREATE);
         } catch (Exception ignored) {
             return false;
         }
-    }
-
-    @Override
-    public void onUpdateApkDownloadComplete() {
-        new Handler().post(() -> new Updater(this).installApk());
-    }
-
-    @Override
-    public void onUpdateAvailable(String string) {
-        cancelLoadingDialog();
-        showUpdateDialog(string);
-    }
-
-    @Override
-    public void onUpdateUnavailable() {
-        supportCheck();
-    }
-
-    @Override
-    public void onConnectionError() {
-        cancelLoadingDialog();
-        new AlertDialog.Builder(this)
-                .setCancelable(false)
-                .setTitle(R.string.dialog_cpad_title_start_error)
-                .setMessage(R.string.dialog_cpad_error_connection)
-                .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> {
-                    if (dPM.isDeviceOwnerApp(getPackageName())) {
-                        new AlertDialog.Builder(this)
-                                .setCancelable(false)
-                                .setMessage(R.string.dialog_cpad_clear_device_owner)
-                                .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog2, which2) -> {
-                                    dPM.clearDeviceOwnerApp(getPackageName());
-                                    finishAndRemoveTask();
-                                })
-                                .setNegativeButton(R.string.dialog_cpad_common_no, (dialog2, which2) -> finishAndRemoveTask())
-                                .show();
-                    } else finishAndRemoveTask();
-                })
-                .show();
     }
 
     private void showUpdateDialog(String str) {
@@ -253,7 +307,7 @@ public class StartActivity extends AppCompatActivity implements UpdateEventListe
         tv.setText(str);
         view.findViewById(R.id.button_cpad_update_info).setOnClickListener(v -> {
             try {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.CPAD_UPDATE_INFO_URL)).addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION));
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.URL_UPDATE_INFO)).addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION));
             } catch (ActivityNotFoundException ignored) {
                 ToastKt.toast(this, R.string.toast_cpad_unknown_activity);
             }
@@ -264,7 +318,8 @@ public class StartActivity extends AppCompatActivity implements UpdateEventListe
                 .setCancelable(false)
                 .setTitle(R.string.dialog_cpad_title_update)
                 .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog, which) -> {
-                    AsyncFileDownload asyncFileDownload = initFileLoader();
+                    AsyncFileDownload asyncFileDownload = new AsyncFileDownload(this, Variables.DOWNLOAD_FILE_URL, new File(new File(getExternalCacheDir(), "update.apk").getPath()), Constants.REQUEST_DOWNLOAD_APK);
+                    asyncFileDownload.execute();
                     ProgressDialog progressDialog = new ProgressDialog(this);
                     progressDialog.setTitle(R.string.dialog_cpad_title_update);
                     progressDialog.setMessage(getString(R.string.progress_cpad_state_downloading_update_file));
@@ -286,12 +341,6 @@ public class StartActivity extends AppCompatActivity implements UpdateEventListe
                     setUpdateMode(str);
                 })
                 .show();
-    }
-
-    private AsyncFileDownload initFileLoader() {
-        AsyncFileDownload asyncfiledownload = new AsyncFileDownload(this, Common.DOWNLOAD_FILE_URL, new File(getExternalCacheDir(), "update.apk"));
-        asyncfiledownload.execute();
-        return asyncfiledownload;
     }
 
     private void setUpdateMode(String s) {
@@ -330,7 +379,7 @@ public class StartActivity extends AppCompatActivity implements UpdateEventListe
                     }
                 }
                 case 2 -> {
-                    if (bindDeviceOwnerService()) {
+                    if (tryBindDeviceOwnerService()) {
                         Common.SET_UPDATE_MODE(this, 2);
                         listView.invalidateViews();
                     } else {
@@ -359,12 +408,12 @@ public class StartActivity extends AppCompatActivity implements UpdateEventListe
                 .setTitle(R.string.dialog_cpad_title_start_error)
                 .setMessage(R.string.dialog_cpad_error_not_use)
                 .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> {
-                    if (dPM.isDeviceOwnerApp(getPackageName())) {
+                    if (dpm.isDeviceOwnerApp(getPackageName())) {
                         new AlertDialog.Builder(this)
                                 .setCancelable(false)
                                 .setMessage(R.string.dialog_cpad_clear_device_owner)
                                 .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog2, which2) -> {
-                                    dPM.clearDeviceOwnerApp(getPackageName());
+                                    dpm.clearDeviceOwnerApp(getPackageName());
                                     finishAndRemoveTask();
                                 })
                                 .setNegativeButton(R.string.dialog_cpad_common_no, (dialog2, which2) -> finishAndRemoveTask())
@@ -375,19 +424,19 @@ public class StartActivity extends AppCompatActivity implements UpdateEventListe
     }
 
     private void showLoadingDialog() {
-        pd = ProgressDialog.show(this, "", getString(R.string.progress_cpad_state_connection), true);
-        pd.show();
+        loadingDialog = ProgressDialog.show(this, "", getString(R.string.progress_cpad_state_connection), true);
+        loadingDialog.show();
     }
 
     private void cancelLoadingDialog() {
         try {
-            if (pd != null) pd.dismiss();
+            if (loadingDialog != null) loadingDialog.dismiss();
         } catch (Exception ignored) {
         }
     }
 
     /* 端末チェック */
-    public boolean checkModel() {
+    public boolean supportModelCheck() {
         String[] modelName = {"TAB-A05-BD", "TAB-A05-BA1"};
         for (String string : modelName) {
             if (Objects.equals(string, Build.MODEL)) {
@@ -398,18 +447,18 @@ public class StartActivity extends AppCompatActivity implements UpdateEventListe
     }
 
     /* 端末チェックエラー */
-    private void errorNotNEO() {
+    private void supportModelError() {
         new AlertDialog.Builder(this)
                 .setCancelable(false)
                 .setTitle(R.string.dialog_cpad_title_start_error)
                 .setMessage(R.string.dialog_cpad_error_not_neo)
                 .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> {
-                    if (dPM.isDeviceOwnerApp(getPackageName())) {
+                    if (dpm.isDeviceOwnerApp(getPackageName())) {
                         new AlertDialog.Builder(this)
                                 .setCancelable(false)
                                 .setMessage(R.string.dialog_cpad_clear_device_owner)
                                 .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog2, which2) -> {
-                                    dPM.clearDeviceOwnerApp(getPackageName());
+                                    dpm.clearDeviceOwnerApp(getPackageName());
                                     finishAndRemoveTask();
                                 })
                                 .setNegativeButton(R.string.dialog_cpad_common_no, (dialog2, which2) -> finishAndRemoveTask())
@@ -420,7 +469,7 @@ public class StartActivity extends AppCompatActivity implements UpdateEventListe
     }
 
     /* 初回起動お知らせ */
-    public void startCheck() {
+    public void WarningDialog() {
         AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setCancelable(false)
                 .setTitle(R.string.dialog_cpad_title_notice_start)
@@ -432,12 +481,12 @@ public class StartActivity extends AppCompatActivity implements UpdateEventListe
                     finish();
                 })
                 .setNegativeButton(R.string.dialog_cpad_disagree, (dialog, which) -> {
-                    if (dPM.isDeviceOwnerApp(getPackageName())) {
+                    if (dpm.isDeviceOwnerApp(getPackageName())) {
                         new AlertDialog.Builder(this)
                                 .setCancelable(false)
                                 .setMessage(R.string.dialog_cpad_clear_device_owner)
                                 .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog2, which2) -> {
-                                    dPM.clearDeviceOwnerApp(getPackageName());
+                                    dpm.clearDeviceOwnerApp(getPackageName());
                                     finishAndRemoveTask();
                                 })
                                 .setNegativeButton(R.string.dialog_cpad_common_no, (dialog2, which2) -> finishAndRemoveTask())
@@ -452,7 +501,7 @@ public class StartActivity extends AppCompatActivity implements UpdateEventListe
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constants.CPAD_REQUEST_UPDATE) {
+        if (requestCode == Constants.REQUEST_UPDATE) {
             finishAndRemoveTask();
         }
     }
@@ -460,6 +509,6 @@ public class StartActivity extends AppCompatActivity implements UpdateEventListe
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (iDOS != null) unbindService(sC);
+        if (mDeviceOwnerService != null) unbindService(mDeviceOwnerServiceConnection);
     }
 }

@@ -414,7 +414,7 @@
     <string name="dialog_cpad_agree">同意する / Agree</string>
     <string name="dialog_cpad_disagree">同意しない / disagree</string>
     <string name="dialog_cpad_owner_disable">解除</string>
-    <string name="dialog_cpad_notice_start">このアプリケーションを使用するために\"同意する\"を押すと、<a href="https://ctabwiki.nerrog.net/?Terop/%E8%A8%B1%E8%AB%BE%E5%A5%91%E7%B4%84%E6%9B%B8">CTabWiki</a>の使用許諾契約に同意したことになります。\nこのアプリケーションを通じて生じた損害や損失について、開発者は一切の責任を負いませんのでご了承ください。\nWhen you press \"Agree\" to use this application, you agree to <a href="https://ctabwiki.nerrog.net/?Terop/%E8%A8%B1%E8%AB%BE%E5%A5%91%E7%B4%84%E6%9B%B8">CTabWiki</a> license agreement.\nPlease note that developer do not take any responsibility or liability for any damage or loss caused through this application.</string>
+    <string name="dialog_cpad_notice_start">このアプリケーションを使用するために\"同意する\"を押すと、<a href="">N/A</a>の使用許諾契約に同意したことになります。\nこのアプリケーションを通じて生じた損害や損失について、開発者は一切の責任を負いませんのでご了承ください。\nWhen you press \"Agree\" to use this application, you agree to <a href="">N/A</a> license agreement.\nPlease note that developer do not take any responsibility or liability for any damage or loss caused through this application.</string>
     <string name="dialog_cpad_update_caution">遷移先のページより新しいバージョンのapkファイルをダウンロードしてadbでインストールしてください</string>
 
     <!-- トースト -->
