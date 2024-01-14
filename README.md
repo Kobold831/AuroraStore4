@@ -1,6 +1,6 @@
 # Aurora Store
 
-**Aurora Store** is an unofficial, FOSS client to Google Play with an elegant design. Aurora Store
+**Aurora Store** is an unofficial, FOSS client to Google Play with bare minimum features. Aurora Store
 allows users to download, update, and search for apps like the Play Store. It works perfectly fine
 with or without Google Play Services or MicroG.
 
@@ -14,6 +14,24 @@ with or without Google Play Services or MicroG.
 - Device & Locale spoofing: Change your device and/or locale to access geo locked apps
 - [Exodus Privacy](https://exodus-privacy.eu.org/) integration: Instantly see trackers in app
 - Updates blacklisting: Ignore updates for specific apps
+- Download manager
+- Manual downloads: allows you to download older version of apps, provided
+  - The APKs are available with Google
+  - You know the version codes for older versions 
+
+## Limitations
+
+- Underlying API used is reversed engineered from PlayStore, changes on side may break it.
+- Provides only base minimum features
+  - Can not download or update paid apps.
+  - Can not update apps/games with [Play Asset Delivery](https://developer.android.com/guide/playcore/asset-delivery)
+- Multiple in-app features are not available if logged-in as Anonymous.
+  - Library
+  - Purchase History
+  - Editor's Choise
+  - Beta Programs
+  - Review Add/Update
+- Token Dispenser Server is not super reliable, downtimes are expected.  
 
 ## Downloads
 
@@ -22,6 +40,11 @@ Please only download the latest stable releases from one of these sources:
 - [F-Droid](https://f-droid.org/en/packages/com.aurora.store/) (Recommended)
 - [AuroraOSS](https://auroraoss.com/AuroraStore/)
 - [GitLab Releases](https://gitlab.com/AuroraOSS/AuroraStore/-/releases)
+
+## Certificate Fingerprints
+
+- SHA1: 94:42:75:D7:59:8B:C0:3E:48:85:06:06:42:25:A7:19:90:A2:22:02
+- SHA256: 4C:62:61:57:AD:02:BD:A3:40:1A:72:63:55:5F:68:A7:96:63:FC:3E:13:A4:D4:36:9A:12:57:09:41:AA:28:0F
 
 ## Support
 

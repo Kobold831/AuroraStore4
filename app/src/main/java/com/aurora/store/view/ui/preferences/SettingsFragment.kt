@@ -26,7 +26,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.aurora.store.R
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class SettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -54,10 +56,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
         findPreference<Preference>("pref_updates")?.setOnPreferenceClickListener {
             findNavController().navigate(R.id.updatesPreference)
-            true
-        }
-        findPreference<Preference>("pref_advanced")?.setOnPreferenceClickListener {
-            findNavController().navigate(R.id.advancedPreference)
             true
         }
         findPreference<Preference>("pref_other")?.setOnPreferenceClickListener {

@@ -19,6 +19,7 @@
 
 package com.aurora.store.view.ui.splash
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.activityViewModels
@@ -26,6 +27,7 @@ import androidx.navigation.fragment.findNavController
 import coil.load
 import coil.transform.RoundedCornersTransformation
 import com.aurora.extensions.hide
+import com.aurora.extensions.isValidPackageName
 import com.aurora.extensions.show
 import com.aurora.store.R
 import com.aurora.store.data.AuthState
@@ -35,7 +37,9 @@ import com.aurora.store.util.Preferences.PREFERENCE_DEFAULT_SELECTED_TAB
 import com.aurora.store.util.Preferences.PREFERENCE_INTRO
 import com.aurora.store.view.ui.commons.BaseFragment
 import com.aurora.store.viewmodel.auth.AuthViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class SplashFragment : BaseFragment(R.layout.fragment_splash) {
 
     private var _binding: FragmentSplashBinding? = null
@@ -67,9 +71,11 @@ class SplashFragment : BaseFragment(R.layout.fragment_splash) {
                     R.id.menu_blacklist_manager -> {
                         findNavController().navigate(R.id.blacklistFragment)
                     }
+
                     R.id.menu_spoof_manager -> {
                         findNavController().navigate(R.id.spoofFragment)
                     }
+
                     R.id.menu_settings -> {
                         findNavController().navigate(R.id.settingsFragment)
                     }
@@ -221,6 +227,14 @@ class SplashFragment : BaseFragment(R.layout.fragment_splash) {
         // Navigation component cannot handle market scheme as its missing a valid host
         return if (activity?.intent != null && activity?.intent?.scheme == "market") {
             requireActivity().intent.data!!.getQueryParameter("id") ?: ""
+        } else if (activity?.intent != null && activity?.intent?.action == Intent.ACTION_SEND) {
+            val clipData = requireActivity().intent.clipData?.getItemAt(0)?.text.toString()
+            if (clipData.contains("/store/apps/details?id=")) {
+                val packageName = clipData.split("id=").last().trim()
+                if (isValidPackageName(packageName)) packageName else ""
+            } else {
+                ""
+            }
         } else {
             requireArguments().getString("packageName") ?: ""
         }

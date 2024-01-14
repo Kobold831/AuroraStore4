@@ -21,9 +21,10 @@ package com.aurora.store.util
 
 import android.content.Context
 import android.os.Environment
-import com.aurora.gplayapi.data.models.App
-import com.aurora.gplayapi.data.models.File
+import com.aurora.extensions.isRAndAbove
+import java.io.File
 import java.util.UUID
+import com.aurora.gplayapi.data.models.File as GPlayFile
 
 fun Context.getInternalBaseDirectory(): String {
     return (getExternalFilesDir(null) ?: filesDir).path
@@ -31,9 +32,11 @@ fun Context.getInternalBaseDirectory(): String {
 
 object PathUtil {
 
+    private const val libraries = "libraries"
+
     private fun getDownloadDirectory(context: Context): String {
         return if (context.isExternalStorageEnable()) {
-            getExternalPath()
+            getExternalPath(context)
         } else {
             context.getInternalBaseDirectory()
         }
@@ -46,53 +49,113 @@ object PathUtil {
     private fun getVersionDirectory(
         context: Context,
         packageName: String,
-        versionCode: Int
+        versionCode: Int,
+        sharedLibPackageName: String? = null
     ): String {
-        return getPackageDirectory(context, packageName) + "/$versionCode"
+        return if (!sharedLibPackageName.isNullOrBlank()) {
+            getLibDownloadDir(context, packageName, versionCode, sharedLibPackageName).absolutePath
+        } else {
+            getPackageDirectory(context, packageName) + "/$versionCode"
+        }
     }
 
-    fun getApkDownloadFile(context: Context, app: App, file: File): String {
-        return getVersionDirectory(context, app.packageName, app.versionCode) + "/${file.name}"
+    fun getAppDownloadDir(context: Context, packageName: String, versionCode: Int): File {
+        return File(getPackageDirectory(context, packageName), versionCode.toString())
+    }
+
+    fun getLibDownloadDir(
+        context: Context,
+        packageName: String,
+        versionCode: Int,
+        sharedLibPackageName: String
+    ): File {
+        return File(
+            getAppDownloadDir(context, packageName, versionCode).absolutePath,
+            "$libraries/$sharedLibPackageName"
+        )
+    }
+
+    fun getApkDownloadFile(
+        context: Context,
+        packageName: String,
+        versionCode: Int,
+        file: GPlayFile,
+        sharedLibPackageName: String? = null
+    ): String {
+        return getVersionDirectory(
+            context,
+            packageName,
+            versionCode,
+            sharedLibPackageName
+        ) + "/${file.name}"
     }
 
     fun getApkDownloadFile(context: Context, packageName: String, versionCode: Int): String {
         return getVersionDirectory(context, packageName, versionCode)
     }
 
-    fun getExternalPath(): String {
-        val auroraDir =
-            java.io.File("${Environment.getExternalStorageDirectory().absolutePath}/Aurora/Store")
-        auroraDir.mkdirs()
-        return auroraDir.absolutePath
+    fun getExternalPath(context: Context): String {
+        val defaultDir =
+            File("${Environment.getExternalStorageDirectory().absolutePath}/Aurora/Store")
+
+        if (!defaultDir.exists())
+            defaultDir.mkdirs()
+
+        return Preferences.getString(
+            context,
+            Preferences.PREFERENCE_DOWNLOAD_DIRECTORY,
+            defaultDir.absolutePath
+        )
     }
 
-    fun getBaseCopyDirectory(): String {
-        return "${getExternalPath()}/Exports/"
+    fun getBaseCopyDirectory(context: Context): String {
+        return "${getExternalPath(context)}/Exports/"
     }
 
-    private fun getObbDownloadPath(app: App): String {
+    private fun getObbDownloadPath(packageName: String): String {
         return Environment.getExternalStorageDirectory()
-            .toString() + "/Android/obb/" + app.packageName
+            .toString() + "/Android/obb/" + packageName
     }
 
-    fun getObbDownloadFile(app: App, file: File): String {
-        val obbDir = getObbDownloadPath(app)
+    fun getObbDownloadDir(packageName: String): File {
+        return File(
+            Environment.getExternalStorageDirectory().absolutePath,
+            "/Android/obb/$packageName"
+        )
+    }
+
+    fun getObbDownloadFile(packageName: String, file: GPlayFile): String {
+        val obbDir = getObbDownloadPath(packageName)
         return "$obbDir/${file.name}"
     }
 
-    fun needsStorageManagerPerm(fileList: List<File>): Boolean {
-        return fileList.any { it.type == File.FileType.OBB || it.type == File.FileType.PATCH }
+    fun needsStorageManagerPerm(fileList: List<GPlayFile>): Boolean {
+        return fileList.any { it.type == GPlayFile.FileType.OBB || it.type == GPlayFile.FileType.PATCH }
     }
 
     fun getSpoofDirectory(context: Context): String {
         return "${context.getInternalBaseDirectory()}/SpoofConfigs"
     }
 
-    fun getNewEmptySpoofConfig(context: Context): java.io.File {
-        val file = java.io.File("${getSpoofDirectory(context)}/${UUID.randomUUID()}.properties")
+    fun getNewEmptySpoofConfig(context: Context): File {
+        val file = File("${getSpoofDirectory(context)}/${UUID.randomUUID()}.properties")
         file.parentFile?.mkdirs()
         file.createNewFile()
         return file
+    }
+
+    fun canWriteToDirectory(context: Context, directoryPath: String): Boolean {
+        val directory = if (directoryPath.startsWith("/")) {
+            File(directoryPath)
+        } else {
+            File(context.getExternalFilesDir(null), directoryPath)
+        }
+
+        return if (isRAndAbove()) {
+            Environment.isExternalStorageManager() && directory.exists() && directory.canWrite()
+        } else {
+            isExternalStorageAccessible(context) && directory.exists() && directory.canWrite()
+        }
     }
 }
 

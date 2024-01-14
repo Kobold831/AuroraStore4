@@ -34,9 +34,10 @@ import com.aurora.store.util.save
 import com.aurora.store.view.epoxy.views.AccentViewModel_
 import com.aurora.store.view.ui.commons.BaseFragment
 import com.google.gson.reflect.TypeToken
+import dagger.hilt.android.AndroidEntryPoint
 import java.nio.charset.StandardCharsets
 
-
+@AndroidEntryPoint
 class AccentFragment : BaseFragment(R.layout.fragment_onboarding_accent) {
 
     private var _binding: FragmentOnboardingAccentBinding? = null
@@ -71,7 +72,7 @@ class AccentFragment : BaseFragment(R.layout.fragment_onboarding_accent) {
                         .id(it.id)
                         .accent(it)
                         .markChecked(accentId == it.id)
-                        .click { v ->
+                        .click { _ ->
                             accentId = it.id
                             updateAccent(accentId)
                             requestModelBuild()

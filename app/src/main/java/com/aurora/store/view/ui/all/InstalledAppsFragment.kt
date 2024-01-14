@@ -26,24 +26,24 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import com.aurora.gplayapi.data.models.App
 import com.aurora.store.R
-import com.aurora.store.databinding.FragmentUpdatesBinding
+import com.aurora.store.databinding.FragmentAppsBinding
 import com.aurora.store.view.epoxy.views.HeaderViewModel_
 import com.aurora.store.view.epoxy.views.app.AppListViewModel_
 import com.aurora.store.view.epoxy.views.shimmer.AppListViewShimmerModel_
 import com.aurora.store.view.ui.commons.BaseFragment
 import com.aurora.store.viewmodel.all.InstalledViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class InstalledAppsFragment : BaseFragment() {
 
     private lateinit var VM: InstalledViewModel
-    private lateinit var B: FragmentUpdatesBinding
+    private lateinit var B: FragmentAppsBinding
 
     companion object {
         @JvmStatic
         fun newInstance(): InstalledAppsFragment {
-            return InstalledAppsFragment().apply {
-
-            }
+            return InstalledAppsFragment()
         }
     }
 
@@ -52,15 +52,16 @@ class InstalledAppsFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        B = FragmentUpdatesBinding.bind(
+        B = FragmentAppsBinding.bind(
             inflater.inflate(
-                R.layout.fragment_updates,
+                R.layout.fragment_apps,
                 container,
                 false
             )
         )
 
-        VM = ViewModelProvider(requireActivity()).get(InstalledViewModel::class.java)
+        VM = ViewModelProvider(requireActivity())[InstalledViewModel::class.java]
+        VM.observe()
 
         return B.root
     }
@@ -69,11 +70,6 @@ class InstalledAppsFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         VM.liveData.observe(viewLifecycleOwner) {
             updateController(it)
-            B.swipeRefreshLayout.isRefreshing = false
-        }
-
-        B.swipeRefreshLayout.setOnRefreshListener {
-            VM.observe()
         }
 
         updateController(null)
@@ -83,7 +79,7 @@ class InstalledAppsFragment : BaseFragment() {
         B.recycler.withModels {
             setFilterDuplicates(true)
             if (appList == null) {
-                for (i in 1..6) {
+                for (i in 1..10) {
                     add(
                         AppListViewShimmerModel_()
                             .id(i)

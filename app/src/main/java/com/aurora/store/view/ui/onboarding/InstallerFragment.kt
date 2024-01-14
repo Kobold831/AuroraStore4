@@ -19,59 +19,70 @@
 
 package com.aurora.store.view.ui.onboarding
 
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import androidx.navigation.fragment.findNavController
+import com.aurora.extensions.isMIUI
+import com.aurora.extensions.isMiuiOptimizationDisabled
+import com.aurora.extensions.showDialog
 import com.aurora.store.R
 import com.aurora.store.data.model.Installer
 import com.aurora.store.databinding.FragmentOnboardingInstallerBinding
+import com.aurora.store.util.Log
 import com.aurora.store.util.Preferences
 import com.aurora.store.util.Preferences.PREFERENCE_INSTALLER_ID
 import com.aurora.store.util.save
 import com.aurora.store.view.epoxy.views.preference.InstallerViewModel_
 import com.aurora.store.view.ui.commons.BaseFragment
 import com.google.gson.reflect.TypeToken
+import dagger.hilt.android.AndroidEntryPoint
+import rikka.shizuku.Shizuku
+import rikka.sui.Sui
 import java.nio.charset.StandardCharsets
 
-class InstallerFragment : BaseFragment() {
+@AndroidEntryPoint
+class InstallerFragment : BaseFragment(R.layout.fragment_onboarding_installer) {
 
-    private lateinit var B: FragmentOnboardingInstallerBinding
+    private var _binding: FragmentOnboardingInstallerBinding? = null
+    private val binding get() = _binding!!
 
     private var installerId: Int = 0
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        B = FragmentOnboardingInstallerBinding.bind(
-            inflater.inflate(
-                R.layout.fragment_onboarding_installer,
-                container,
-                false
-            )
-        )
-
-        return B.root
+    private var shizukuAlive = Sui.isSui()
+    private val shizukuAliveListener = Shizuku.OnBinderReceivedListener {
+        Log.d("ShizukuInstaller Alive!")
+        shizukuAlive = true
     }
+    private val shizukuDeadListener = Shizuku.OnBinderDeadListener {
+        Log.d("ShizukuInstaller Dead!")
+        shizukuAlive = false
+    }
+
+    private val shizukuResultListener =
+        Shizuku.OnRequestPermissionResultListener { _: Int, result: Int ->
+            if (result == PackageManager.PERMISSION_GRANTED) {
+                this.installerId = 5
+                save(PREFERENCE_INSTALLER_ID, 5)
+                binding.epoxyRecycler.requestModelBuild()
+            } else {
+                showDialog(
+                    R.string.action_installations,
+                    R.string.installer_shizuku_unavailable
+                )
+            }
+        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentOnboardingInstallerBinding.bind(view)
 
-        installerId = Preferences.getInteger(
-            requireContext(),
-            PREFERENCE_INSTALLER_ID
-        )
+        installerId = Preferences.getInteger(requireContext(), PREFERENCE_INSTALLER_ID)
 
-        val installerList = loadInstallersFromAssets()
-        updateController(installerList)
-    }
-
-    private fun updateController(installerList: List<Installer>) {
-        B.epoxyRecycler.withModels {
+        // RecyclerView
+        binding.epoxyRecycler.withModels {
             setFilterDuplicates(true)
-            installerList.forEach {
+            loadInstallersFromAssets().forEach {
                 add(
                     InstallerViewModel_()
                         .id(it.id)
@@ -84,13 +95,51 @@ class InstallerFragment : BaseFragment() {
                 )
             }
         }
+
+        if (isMIUI() && !isMiuiOptimizationDisabled()) {
+            findNavController().navigate(
+                OnboardingFragmentDirections.actionOnboardingFragmentToDeviceMiuiSheet()
+            )
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
     }
 
     private fun save(installerId: Int) {
         when (installerId) {
             0 -> {
+                if (isMIUI() && !isMiuiOptimizationDisabled()) {
+                    findNavController().navigate(
+                        OnboardingFragmentDirections.actionOnboardingFragmentToDeviceMiuiSheet()
+                    )
+                }
                 this.installerId = installerId
                 save(PREFERENCE_INSTALLER_ID, installerId)
+            }
+            2 -> {
+                showDialog(
+                    R.string.action_installations,
+                    R.string.installer_root_unavailable
+                )
+            }
+            4 -> {
+                showDialog(
+                    R.string.action_installations,
+                    R.string.installer_am_unavailable
+                )
+            }
+            5 -> {
+                showDialog(
+                    R.string.action_installations,
+                    R.string.installer_shizuku_unavailable
+                )
             }
             else -> {
                 this.installerId = installerId
@@ -111,4 +160,5 @@ class InstallerFragment : BaseFragment() {
             object : TypeToken<MutableList<Installer?>?>() {}.type
         )
     }
+
 }

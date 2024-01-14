@@ -29,6 +29,7 @@ plugins {
     id("androidx.navigation.safeargs.kotlin")
     id("org.jlleitschuh.gradle.ktlint")
     id("dev.rikka.tools.refine")
+    id("com.google.dagger.hilt.android")
 }
 
 kotlin {
@@ -84,7 +85,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            if (File("signing.properties").exists()) {
+                signingConfig = signingConfigs.getByName("debug")
+            }
         }
     }
 
@@ -118,7 +121,7 @@ dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to arrayOf("*.jar"))))
 
     //Protobuf
-    implementation("com.google.protobuf:protobuf-javalite:3.24.2")
+    implementation("com.google.protobuf:protobuf-javalite:3.25.1")
 
     //Google's Goodies
     implementation("com.google.android.material:material:1.11.0")
@@ -127,56 +130,76 @@ dependencies {
     //AndroidX
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
-    implementation("androidx.vectordrawable:vectordrawable:1.1.0")
     implementation("androidx.preference:preference-ktx:1.2.1")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     //Arch LifeCycle
-    val life_version = "2.6.2"
-    //noinspection GradleDependency
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:$life_version")
-    //noinspection GradleDependency
-    implementation("androidx.lifecycle:lifecycle-service:$life_version")
-    //noinspection GradleDependency
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$life_version")
-    //noinspection GradleDependency
-    implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:$life_version")
+    val lifeVersion = "2.6.2"
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifeVersion")
+    implementation("androidx.lifecycle:lifecycle-process:$lifeVersion")
 
     //Arch Navigation
-    val nav_version = "2.7.3"
-    //noinspection GradleDependency
-    implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
-    //noinspection GradleDependency
-    implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
+    val navVersion = "2.7.6"
+    implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
+    implementation("androidx.navigation:navigation-ui-ktx:$navVersion")
 
     //Coil
-    implementation("io.coil-kt:coil:2.4.0")
+    implementation("io.coil-kt:coil:2.5.0")
 
     //Shimmer
     implementation("com.facebook.shimmer:shimmer:0.5.0")
 
     //Epoxy
-    val epoxy_version = "5.1.2"
-    implementation("com.airbnb.android:epoxy:$epoxy_version")
-    ksp("com.airbnb.android:epoxy-processor:$epoxy_version")
+    val epoxyVersion = "5.1.3"
+    implementation("com.airbnb.android:epoxy:$epoxyVersion")
+    ksp("com.airbnb.android:epoxy-processor:$epoxyVersion")
 
     //HTTP Clients
-    implementation("com.squareup.okhttp3:okhttp:4.11.0")
-
-    //Fetch - Downloader
-    implementation("androidx.tonyodev.fetch2:xfetch2:3.1.6")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     //EventBus
     implementation("org.greenrobot:eventbus:3.3.1")
 
+    //Lib-SU
+    implementation("com.github.topjohnwu.libsu:core:5.0.5")
+
     //Love <3
-    implementation("com.gitlab.AuroraOSS:gplayapi:3.2.0")
+    implementation("com.aurora:gplayapi:3.2.9")
 
     //Browser
     implementation("androidx.browser:browser:1.7.0")
 
+    //Shizuku
+    val shizukuVersion = "13.1.5"
+    compileOnly("dev.rikka.hidden:stub:4.3.2")
+    implementation("dev.rikka.tools.refine:runtime:4.4.0")
+    implementation("dev.rikka.shizuku:api:${shizukuVersion}")
+    implementation("dev.rikka.shizuku:provider:${shizukuVersion}")
+
+    implementation("org.lsposed.hiddenapibypass:hiddenapibypass:4.3")
+
+    //Test
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
     //WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+
+    //Hilt
+    val hiltVersion = "2.49"
+    ksp("com.google.dagger:hilt-android-compiler:$hiltVersion")
+    implementation("com.google.dagger:hilt-android:$hiltVersion")
+
+    val hiltWorkVersion = "1.1.0"
+    ksp("androidx.hilt:hilt-compiler:$hiltWorkVersion")
+    implementation("androidx.hilt:hilt-work:$hiltWorkVersion")
+
+    //Room
+    val roomVersion = "2.6.1"
+    ksp("androidx.room:room-compiler:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    implementation("androidx.room:room-runtime:$roomVersion")
 
     // LeakCanary
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.12")

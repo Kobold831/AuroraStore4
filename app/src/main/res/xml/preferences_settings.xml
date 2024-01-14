@@ -62,13 +62,6 @@
     <Preference
         app:icon="@drawable/ic_tune"
         app:iconSpaceReserved="false"
-        app:key="pref_advanced"
-        app:layout="@layout/item_preference"
-        app:title="@string/title_advanced" />
-
-    <Preference
-        app:icon="@drawable/ic_tune"
-        app:iconSpaceReserved="false"
         app:key="pref_other"
         app:layout="@layout/item_preference"
         app:title="@string/pref_cpad_other_title" />

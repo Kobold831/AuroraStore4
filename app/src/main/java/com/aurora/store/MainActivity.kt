@@ -21,19 +21,22 @@
 package com.aurora.store
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.PowerManager
 import android.provider.Settings
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
@@ -52,6 +55,7 @@ import coil.transform.RoundedCornersTransformation
 import com.aurora.Constants
 import com.aurora.extensions.accentColor
 import com.aurora.extensions.applyThemeAccent
+import com.aurora.extensions.isMAndAbove
 import com.aurora.extensions.isRAndAbove
 import com.aurora.extensions.toast
 import com.aurora.store.data.model.NetworkStatus
@@ -61,18 +65,16 @@ import com.aurora.store.util.Log
 import com.aurora.store.util.Preferences
 import com.aurora.store.util.Preferences.PREFERENCE_DEFAULT_SELECTED_TAB
 import com.aurora.store.view.ui.sheets.NetworkDialogSheet
-import com.aurora.store.viewmodel.MainViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
-
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var B: ActivityMainBinding
     private lateinit var navController: NavController
     private lateinit var appConfig: AppBarConfiguration
-
-    private val viewModel: MainViewModel by viewModels()
 
     private val startForPermissions =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
@@ -99,7 +101,7 @@ class MainActivity : AppCompatActivity() {
 
         this.lifecycleScope.launch {
             NetworkProvider(applicationContext).networkStatus.collect {
-                when(it) {
+                when (it) {
                     NetworkStatus.AVAILABLE -> {
                         if (!supportFragmentManager.isDestroyed && isIntroDone()) {
                             val fragment = supportFragmentManager
@@ -111,6 +113,7 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
                     }
+
                     NetworkStatus.LOST -> {
                         if (!supportFragmentManager.isDestroyed && isIntroDone()) {
                             supportFragmentManager.beginTransaction()
@@ -185,12 +188,38 @@ class MainActivity : AppCompatActivity() {
                         B.toolbar.visibility = View.VISIBLE
                         B.drawerLayout.setDrawerLockMode(LOCK_MODE_UNLOCKED)
                     }
+
                     else -> {
                         hideTopLevelOnlyViews()
                     }
                 }
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+
+        // Show warning if battery optimizations is enabled
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        if (isMAndAbove() && !powerManager.isIgnoringBatteryOptimizations(packageName)) {
+            menu.findItem(R.id.menu_doze_info)?.isVisible = true
+        }
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_download_manager -> {
+                navController.navigate(R.id.downloadFragment)
+                return true
+            }
+            R.id.menu_doze_info -> {
+                navController.navigate(R.id.dozeWarningSheet)
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun hideTopLevelOnlyViews() {

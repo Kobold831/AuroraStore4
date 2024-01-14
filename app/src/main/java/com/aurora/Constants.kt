@@ -19,18 +19,18 @@
 
 package com.aurora
 
-import android.content.Intent
-
 object Constants {
     const val INT_EXTRA = "INT_EXTRA"
     const val FLOAT_EXTRA = "FLOAT_EXTRA"
     const val STRING_APP = "STRING_APP"
+    const val STRING_VERSION = "STRING_VERSION"
     const val STRING_EXTRA = "STRING_EXTRA"
     const val BROWSE_EXTRA = "BROWSE_EXTRA"
 
     const val FETCH_GROUP_ID = "FETCH_GROUP_ID"
     const val APP_ID = "com.aurora.store"
 
+    const val EXODUS_SUBMIT_PAGE = "https://reports.exodus-privacy.eu.org/analysis/submit/#"
     const val EXODUS_BASE_URL = "https://reports.exodus-privacy.eu.org/api/search/"
     const val EXODUS_REPORT_URL = "https://reports.exodus-privacy.eu.org/reports/"
     const val SHARE_URL = "https://play.google.com/store/apps/details?id="
@@ -45,6 +45,7 @@ object Constants {
     const val URL_DISPENSER = "https://auroraoss.com/api/auth"
 
     const val PLAY_QUERY_URL = "https://play.google.com/store/search?q="
+    const val ANDROID_CONNECTIVITY_URL = "http://connectivitycheck.android.com/generate_204"
 
     //ACCOUNTS
     const val ACCOUNT_SIGNED_IN = "ACCOUNT_SIGNED_IN"

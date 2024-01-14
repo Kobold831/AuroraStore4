@@ -41,27 +41,34 @@ object Preferences {
     const val PREFERENCE_FILTER_GOOGLE = "PREFERENCE_FILTER_GOOGLE"
     const val PREFERENCE_FILTER_FDROID = "PREFERENCE_FILTER_FDROID"
     const val PREFERENCE_FILTER_SEARCH = "PREFERENCE_FILTER_SEARCH"
+    const val PREFERENCE_FILTER_AURORA_ONLY = "PREFERENCE_FILTER_AURORA_ONLY"
 
     const val PREFERENCE_AUTO_INSTALL = "PREFERENCE_AUTO_INSTALL"
     const val PREFERENCE_AUTO_DELETE = "PREFERENCE_AUTO_DELETE"
 
     const val INSTALLATION_ABANDON_SESSION = "INSTALLATION_ABANDON_SESSION"
 
-    const val PREFERENCE_DOWNLOAD_ACTIVE = "PREFERENCE_DOWNLOAD_ACTIVE"
     const val PREFERENCE_DOWNLOAD_EXTERNAL = "PREFERENCE_DOWNLOAD_EXTERNAL"
-    const val PREFERENCE_DOWNLOAD_WIFI = "PREFERENCE_DOWNLOAD_WIFI"
+    const val PREFERENCE_DOWNLOAD_DIRECTORY = "PREFERENCE_DOWNLOAD_DIRECTORY"
+    const val PREFERENCE_DOWNLOAD_WIFI_ONLY = "PREFERENCE_DOWNLOAD_WIFI_ONLY"
 
     const val PREFERENCE_TOS_READ = "PREFERENCE_TOS_READ"
 
     const val PREFERENCE_INSECURE_ANONYMOUS = "PREFERENCE_INSECURE_ANONYMOUS"
+    const val PREFERENCE_PROXY_URL = "PREFERENCE_PROXY_URL"
+    const val PREFERENCE_PROXY_INFO = "PREFERENCE_PROXY_INFO"
+    const val PREFERENCE_PROXY_ENABLED = "PREFERENCE_PROXY_ENABLED"
+
+    const val PREFERENCE_VENDING_VERSION = "PREFERENCE_VENDING_VERSION"
 
     const val PREFERENCE_UPDATES_EXTENDED = "PREFERENCE_UPDATES_EXTENDED"
+    const val PREFERENCE_UPDATES_AUTO = "PREFERENCE_UPDATES_AUTO"
     const val PREFERENCE_UPDATES_CHECK = "PREFERENCE_UPDATES_CHECK"
-
-    const val PREFERENCE_ADVANCED_SEARCH_IN_CTT = "PREFERENCE_ADVANCED_SEARCH_IN_CTT"
-    const val PREFERENCE_ADVANCED_USE_WEB_API = "PREFERENCE_ADVANCED_USE_WEB_API"
+    const val PREFERENCE_UPDATES_CHECK_INTERVAL = "PREFERENCE_UPDATES_CHECK_INTERVAL"
 
     const val PREFERENCE_UNIQUE_GROUP_IDS = "PREFERENCE_UNIQUE_GROUP_IDS"
+
+    const val PREFERENCE_SELF_UPDATE = "PREFERENCE_SELF_UPDATE"
 
     private var prefs: SharedPreferences? = null
 
@@ -92,12 +99,12 @@ object Preferences {
         getPrefs(context).edit().putBoolean(key, value).apply()
     }
 
-    fun getString(context: Context, key: String): String {
-        return getPrefs(context).getString(key, "").toString()
+    fun getString(context: Context, key: String, default: String = ""): String {
+        return getPrefs(context).getString(key, default).toString()
     }
 
-    fun getInteger(context: Context, key: String): Int {
-        return getPrefs(context).getInt(key, 0)
+    fun getInteger(context: Context, key: String, default: Int = 0): Int {
+        return getPrefs(context).getInt(key, default)
     }
 
     fun getFloat(context: Context, key: String): Float {
@@ -108,8 +115,8 @@ object Preferences {
         return getPrefs(context).getLong(key, 0L)
     }
 
-    fun getBoolean(context: Context, key: String): Boolean {
-        return getPrefs(context).getBoolean(key, false)
+    fun getBoolean(context: Context, key: String, default: Boolean = false): Boolean {
+        return getPrefs(context).getBoolean(key, default)
     }
 }
 

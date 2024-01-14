@@ -22,13 +22,10 @@ package com.aurora.store.data.installer
 
 import android.content.Context
 import android.content.pm.PackageInstaller
-import android.content.pm.PackageManager
-import com.aurora.extensions.isOAndAbove
-import com.aurora.store.BuildConfig
 import com.aurora.store.R
-import com.aurora.store.util.PackageUtil
 import com.aurora.store.util.Preferences
 import com.aurora.store.util.Preferences.PREFERENCE_INSTALLER_ID
+
 open class AppInstaller private constructor(var context: Context) {
 
     companion object {
@@ -64,17 +61,8 @@ open class AppInstaller private constructor(var context: Context) {
             return choiceAndInstaller[prefValue]!!
         }
 
-        return when (prefValue) {
-            1 -> {
-                val installer = SessionInstaller(context)
-                choiceAndInstaller[prefValue] = installer
-                installer
-            }
-            else -> {
-                val installer = SessionInstaller(context)
-                choiceAndInstaller[prefValue] = installer
-                installer
-            }
-        }
+        val installer = SessionInstaller(context)
+        choiceAndInstaller[prefValue] = installer
+        return installer
     }
 }

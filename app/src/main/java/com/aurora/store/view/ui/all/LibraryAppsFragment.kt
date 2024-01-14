@@ -26,6 +26,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import com.aurora.gplayapi.data.models.StreamCluster
 import com.aurora.store.R
+import com.aurora.store.databinding.FragmentAppsBinding
 import com.aurora.store.databinding.FragmentUpdatesBinding
 import com.aurora.store.view.custom.recycler.EndlessRecyclerOnScrollListener
 import com.aurora.store.view.epoxy.views.AppProgressViewModel_
@@ -34,11 +35,13 @@ import com.aurora.store.view.epoxy.views.app.AppListViewModel_
 import com.aurora.store.view.epoxy.views.shimmer.AppListViewShimmerModel_
 import com.aurora.store.view.ui.commons.BaseFragment
 import com.aurora.store.viewmodel.all.LibraryAppsViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class LibraryAppsFragment : BaseFragment() {
 
     private lateinit var VM: LibraryAppsViewModel
-    private lateinit var B: FragmentUpdatesBinding
+    private lateinit var B: FragmentAppsBinding
     lateinit var endlessRecyclerOnScrollListener: EndlessRecyclerOnScrollListener
 
     companion object {
@@ -55,9 +58,9 @@ class LibraryAppsFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        B = FragmentUpdatesBinding.bind(
+        B = FragmentAppsBinding.bind(
             inflater.inflate(
-                R.layout.fragment_updates,
+                R.layout.fragment_apps,
                 container,
                 false
             )
@@ -70,7 +73,6 @@ class LibraryAppsFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        B.swipeRefreshLayout.isEnabled = false
         VM.liveData.observe(viewLifecycleOwner) {
             updateController(it)
         }
@@ -92,7 +94,7 @@ class LibraryAppsFragment : BaseFragment() {
         B.recycler.withModels {
             setFilterDuplicates(true)
             if (streamCluster == null) {
-                for (i in 1..6) {
+                for (i in 1..10) {
                     add(
                         AppListViewShimmerModel_()
                             .id(i)

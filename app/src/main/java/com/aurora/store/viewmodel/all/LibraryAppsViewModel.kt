@@ -37,13 +37,13 @@ class LibraryAppsViewModel(application: Application) : BaseAndroidViewModel(appl
 
     private val authData: AuthData = AuthProvider.with(application).getAuthData()
     private val clusterHelper: ClusterHelper =
-        ClusterHelper(authData).using(HttpClient.getPreferredClient())
+        ClusterHelper(authData).using(HttpClient.getPreferredClient(application))
 
     val liveData: MutableLiveData<StreamCluster> = MutableLiveData()
     var streamCluster: StreamCluster = StreamCluster()
 
     init {
-        observe()
+        requestState = RequestState.Init
     }
 
     override fun observe() {

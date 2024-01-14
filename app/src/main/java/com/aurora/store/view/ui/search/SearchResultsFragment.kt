@@ -51,9 +51,10 @@ import com.aurora.store.view.ui.commons.BaseFragment
 import com.aurora.store.viewmodel.search.SearchResultViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
-
+@AndroidEntryPoint
 class SearchResultsFragment : BaseFragment(R.layout.fragment_search_result),
     OnSharedPreferenceChangeListener {
 
@@ -262,7 +263,10 @@ class SearchResultsFragment : BaseFragment(R.layout.fragment_search_result),
         })
 
         searchView.setOnEditorActionListener { _: TextView?, actionId: Int, _: KeyEvent? ->
-            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH
+                || actionId == KeyEvent.ACTION_DOWN
+                || actionId == KeyEvent.KEYCODE_ENTER
+            ) {
                 query = searchView.text.toString()
                 query?.let {
                     queryViewModel(it)
@@ -285,9 +289,13 @@ class SearchResultsFragment : BaseFragment(R.layout.fragment_search_result),
     }
 
     private fun filter(appList: MutableList<App>): List<App> {
+        val tempList:MutableList<App> = mutableListOf()
+        tempList.addAll(appList)
+
         filter = FilterProvider.with(requireContext()).getSavedFilter()
-        return appList
+        return tempList
             .asSequence()
+            .filter { it.displayName.isNotEmpty() } // Some of the apps may not have metadata
             .filter { if (!filter.paidApps) it.isFree else true }
             .filter { if (!filter.appsWithAds) !it.containsAds else true }
             .filter { if (!filter.gsfDependentApps) it.dependencies.dependentPackages.isEmpty() else true }

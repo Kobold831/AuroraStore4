@@ -20,12 +20,10 @@
 package com.aurora.store.viewmodel.search
 
 import android.app.Application
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.aurora.extensions.flushAndAdd
-import com.aurora.extensions.shouldUseWebAPI
 import com.aurora.gplayapi.data.models.AuthData
 import com.aurora.gplayapi.data.models.SearchBundle
 import com.aurora.gplayapi.helpers.SearchHelper
@@ -45,14 +43,21 @@ class SearchResultViewModel(application: Application) : BaseAndroidViewModel(app
         .with(application)
         .getAuthData()
 
+    private val webSearchHelper: WebSearchHelper = WebSearchHelper(authData)
     private val searchHelper: SearchHelper = SearchHelper(authData)
-        .using(HttpClient.getPreferredClient())
-
-    private val webSearchHelper = WebSearchHelper()
+        .using(HttpClient.getPreferredClient(application))
 
     val liveData: MutableLiveData<SearchBundle> = MutableLiveData()
 
     private var searchBundle: SearchBundle = SearchBundle()
+
+    fun helper(): SearchHelper {
+        return if (authData.isAnonymous) {
+            webSearchHelper
+        } else {
+            searchHelper
+        }
+    }
 
     fun observeSearchResults(query: String) {
         //Clear old results
@@ -74,17 +79,7 @@ class SearchResultViewModel(application: Application) : BaseAndroidViewModel(app
     private fun search(
         query: String
     ): SearchBundle {
-        return if ((getApplication() as Context).shouldUseWebAPI()) {
-            val result = webSearchHelper.searchResults(query)
-            val searchBundle = SearchBundle().apply {
-                this.id = 100
-                this.query = query
-                appList = result.values.flatten().toSet().toMutableList()
-            }
-            return searchBundle
-        } else {
-            searchHelper.searchResults(query)
-        }
+        return helper().searchResults(query)
     }
 
     @Synchronized
@@ -93,7 +88,7 @@ class SearchResultViewModel(application: Application) : BaseAndroidViewModel(app
             supervisorScope {
                 try {
                     if (nextSubBundleSet.isNotEmpty() && responseCode.value != 429) {
-                        val newSearchBundle = searchHelper.next(nextSubBundleSet)
+                        val newSearchBundle = helper().next(nextSubBundleSet)
                         if (newSearchBundle.appList.isNotEmpty()) {
                             searchBundle.apply {
                                 subBundles.flushAndAdd(newSearchBundle.subBundles)

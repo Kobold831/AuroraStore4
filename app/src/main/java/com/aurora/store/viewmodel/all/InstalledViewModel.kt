@@ -37,17 +37,16 @@ class InstalledViewModel(application: Application) : BaseAppsViewModel(applicati
         EventBus.getDefault().register(this)
 
         requestState = RequestState.Init
-        observe()
     }
 
     override fun observe() {
         viewModelScope.launch(Dispatchers.IO) {
-            try {
+            requestState = try {
                 appList.flushAndAdd(getFilteredApps())
                 liveData.postValue(appList.sortedBy { it.displayName.lowercase(Locale.getDefault()) })
-                requestState = RequestState.Complete
+                RequestState.Complete
             } catch (e: Exception) {
-                requestState = RequestState.Pending
+                RequestState.Pending
             }
         }
     }
@@ -58,12 +57,15 @@ class InstalledViewModel(application: Application) : BaseAppsViewModel(applicati
             is BusEvent.InstallEvent -> {
                 updateListAndPost(event.packageName)
             }
+
             is BusEvent.UninstallEvent -> {
                 updateListAndPost(event.packageName)
             }
+
             is BusEvent.Blacklisted -> {
                 observe()
             }
+
             else -> {
 
             }

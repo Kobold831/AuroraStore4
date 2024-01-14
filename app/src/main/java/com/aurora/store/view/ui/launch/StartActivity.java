@@ -54,6 +54,7 @@ import com.aurora.store.data.event.DownloadEventListener;
 import com.aurora.store.data.handler.ProgressHandler;
 import com.aurora.store.util.Common;
 import com.aurora.store.util.Variables;
+import com.aurora.store.view.epoxy.views.UpdateHeaderView;
 import com.aurora.store.view.epoxy.views.UpdateModeView;
 import com.saradabar.cpadcustomizetool.data.service.IDeviceOwnerService;
 
@@ -130,7 +131,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
         StringBuilder data = new StringBuilder();
         String str = bufferedReader.readLine();
 
-        while(str != null){
+        while (str != null) {
             data.append(str);
             str = bufferedReader.readLine();
         }
@@ -145,7 +146,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
     @Override
     public void onDownloadComplete(int reqCode) {
         switch (reqCode) {
-            case Constants.REQUEST_DOWNLOAD_UPDATE_CHECK:
+            case Constants.REQUEST_DOWNLOAD_UPDATE_CHECK -> {
                 try {
                     JSONObject jsonObj1 = parseJson();
                     JSONObject jsonObj2 = jsonObj1.getJSONObject("as");
@@ -161,8 +162,8 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                     }
                 } catch (JSONException | IOException ignored) {
                 }
-                break;
-            case Constants.REQUEST_DOWNLOAD_SUPPORT_CHECK:
+            }
+            case Constants.REQUEST_DOWNLOAD_SUPPORT_CHECK -> {
                 try {
                     JSONObject jsonObj1 = parseJson();
                     JSONObject jsonObj2 = jsonObj1.getJSONObject("as");
@@ -200,12 +201,11 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                     }
                 } catch (JSONException | IOException ignored) {
                 }
-                break;
-            case Constants.REQUEST_DOWNLOAD_APK:
-                new Handler().post(() -> new Updater(this).installApk());
-                break;
-            default:
-                break;
+            }
+            case Constants.REQUEST_DOWNLOAD_APK ->
+                    new Handler().post(() -> new Updater(this).installApk());
+            default -> {
+            }
         }
     }
 
