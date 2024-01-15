@@ -80,6 +80,7 @@ class InstallerFragment : BaseFragment(R.layout.fragment_onboarding_installer) {
 
     private fun save(installerId: Int) {
         when (installerId) {
+            /* セッションインストーラー（デバイスオーナーまたはCPadCustomizeTool） */
             0 -> {
                 if (!hasDeviceOwnerService()) {
                     if (mDeviceOwnerService!!.isDeviceOwnerApp) {
@@ -98,6 +99,7 @@ class InstallerFragment : BaseFragment(R.layout.fragment_onboarding_installer) {
                     )
                 }
             }
+            /* Dhizukuインストーラー */
             1 -> {
             }
         }

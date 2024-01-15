@@ -169,7 +169,6 @@
     <string name="device_miui_subtitle">"Session installer can not install apps due to MIUI Optimizations."</string>
     <string name="device_miui_description">"Please, disable MIUI optimizations to allow installations, otherwise you can choose Root or Services installer."</string>
     <string name="device_miui_extra">"Optionally you can choose Native installer, but then you can not install bundled (split) APKs, so choice is yours."</string>
-    <string name="dialog_desc_native_split">"You can not install bundled(split) apps via Native Installer. Change your installer to Session, Services or Root."</string>
     <string name="notification_channel_alert">"Quick notification"</string>
     <string name="notification_channel_general">"General notification"</string>
     <string name="onboarding_installer_select">"Select a suitable installer"</string>
@@ -378,8 +377,7 @@
     <string name="dialog_cpad_error_not_neo">この端末は”チャレンジパッドNEO・NEXT”ではありません\nこのアプリは使用できません</string>
     <string name="dialog_cpad_error_wifi">通信エラーが発生しました\nネットワークに接続してください</string>
     <string name="dialog_cpad_error_not_use">このアプリは使用できません</string>
-    <string name="dialog_cpad_error_failure_bind">デバイスオーナーではないためこのアプリは使用できません\n自動回避としてCPad Customize Toolの検出を試みましたが失敗しました</string>
-    <string name="dialog_cpad_error_bind_no_owner">デバイスオーナーではないためこのアプリは使用できません\n自動回避としてCPad Customize Toolを検出しましたがデバイスオーナーではありません</string>
+    <string name="dialog_cpad_error_installer">このアプリを使用するには以下の要件をひとつ満たしていることを確認してください\n\n・AuroraStoreがデバイスオーナー\n・CPadCustomizeToolがインストールされておりデバイスオーナー\n・Dhizukuがインストールされておりデバイスオーナー</string>
     <string name="dialog_cpad_error_failure_connection">CPad Customize Toolとの接続に失敗しました</string>
     <string name="dialog_cpad_error_not_work_mode">選択されたモードは機能していないため設定できません</string>
     <string name="dialog_cpad_error_reset_update_mode">デバイスオーナーではありません\nアップデートモードをリセットしました</string>

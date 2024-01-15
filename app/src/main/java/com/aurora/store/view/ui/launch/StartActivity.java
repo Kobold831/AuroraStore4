@@ -35,6 +35,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.widget.AbsListView;
@@ -115,12 +116,12 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
 
     private void updateCheck() {
         showLoadingDialog();
-        new AsyncFileDownload(this, "https://raw.githubusercontent.com/Kobold831/Server/main/production/json/Check.json", new File(new File(getExternalCacheDir(), "Check.json").getPath()), Constants.REQUEST_DOWNLOAD_UPDATE_CHECK).execute();
+        new AsyncFileDownload(this, Constants.URL_CHECK, new File(new File(getExternalCacheDir(), "Check.json").getPath()), Constants.REQUEST_DOWNLOAD_UPDATE_CHECK).execute();
     }
 
     private void supportCheck() {
         showLoadingDialog();
-        new AsyncFileDownload(this, "https://raw.githubusercontent.com/Kobold831/Server/main/production/json/Check.json", new File(new File(getExternalCacheDir(), "Check.json").getPath()), Constants.REQUEST_DOWNLOAD_SUPPORT_CHECK).execute();
+        new AsyncFileDownload(this, Constants.URL_CHECK, new File(new File(getExternalCacheDir(), "Check.json").getPath()), Constants.REQUEST_DOWNLOAD_SUPPORT_CHECK).execute();
     }
 
     public JSONObject parseJson() throws JSONException, IOException {
@@ -170,26 +171,34 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
 
                     if (jsonObj3.getInt("supportCode") == 0) {
                         cancelLoadingDialog();
+                        /* サポートモデルか確認 */
                         if (supportModelCheck()) {
+                            /* AuroraStoreがデバイスオーナーならXInstallerへ、デバイスオーナーではないならバインド試行 */
                             if (!dpm.isDeviceOwnerApp(getPackageName())) {
+                                /* CPadCustomizeToolへバインドできたらデバイスオーナーか確認、バインドできないならDInstallerへ */
                                 if (tryBindDeviceOwnerService()) {
-                                    Runnable runnable = this::isDeviceOwner;
-                                    new Handler().postDelayed(runnable, 1000);
+                                    new Handler().postDelayed(() -> {
+                                        try {
+                                            /* CPadCustomizeToolがデバイスオーナーならOInstallerへ、デバイスオーナーではないならDInstallerへ */
+                                            if (isODeviceOwner()) {
+                                                OInstaller();
+                                            } else {
+                                                DInstaller();
+                                            }
+                                        } catch (Exception e) {
+                                            new AlertDialog.Builder(getApplicationContext())
+                                                    .setCancelable(false)
+                                                    .setTitle(R.string.dialog_cpad_title_start_error)
+                                                    .setMessage(getResources().getString(R.string.dialog_cpad_error) + "\n" + e.getMessage())
+                                                    .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> finishAndRemoveTask())
+                                                    .show();
+                                        }
+                                    }, 1000);
                                 } else {
-                                    new AlertDialog.Builder(this)
-                                            .setCancelable(false)
-                                            .setTitle(R.string.dialog_cpad_title_start_error)
-                                            .setMessage(R.string.dialog_cpad_error_failure_bind)
-                                            .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> finishAndRemoveTask())
-                                            .show();
+                                    DInstaller();
                                 }
                             } else {
-                                if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
-                                    WarningDialog();
-                                } else {
-                                    startActivity(new Intent(this, MainActivity.class));
-                                    finish();
-                                }
+                                XInstaller();
                             }
                         } else {
                             supportModelError();
@@ -254,31 +263,52 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                 .show();
     }
 
-    public void isDeviceOwner() {
-        try {
-            if (mDeviceOwnerService.isDeviceOwnerApp()) {
-                if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
-                    WarningDialog();
-                } else {
-                    startActivity(new Intent(this, MainActivity.class));
-                    finish();
-                }
-            } else {
-                new AlertDialog.Builder(this)
-                        .setCancelable(false)
-                        .setTitle(R.string.dialog_cpad_title_start_error)
-                        .setMessage(R.string.dialog_cpad_error_bind_no_owner)
-                        .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> finishAndRemoveTask())
-                        .show();
-            }
-        } catch (Exception e) {
-            new AlertDialog.Builder(this)
-                    .setCancelable(false)
-                    .setTitle(R.string.dialog_cpad_title_start_error)
-                    .setMessage(getResources().getString(R.string.dialog_cpad_error) + "\n" + e.getMessage())
-                    .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> finishAndRemoveTask())
-                    .show();
+    /* デバイスオーナーインストーラー設定 */
+    public void XInstaller() {
+        /* Preferences.putInteger(context, PREFERENCE_INSTALLER_ID)保存実装 */
+
+        if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
+            WarningDialog();
+        } else {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
         }
+    }
+
+    /* DeviceOwnerServiceインストーラー（CPadCustomizeTool）設定 */
+    public void OInstaller() {
+        /* Preferences.putInteger(context, PREFERENCE_INSTALLER_ID)保存実装 */
+
+        if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
+            WarningDialog();
+        } else {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        }
+    }
+
+    /* Dhizukuインストーラー設定 */
+    public void DInstaller() {
+        /* バインド失敗した場合はDhizuku通信試行 */
+        /* Dhizuku通信と権限許可プロンプト処理実装予定 */
+        //if()
+
+        /* Preferences.putInteger(context, PREFERENCE_INSTALLER_ID)保存実装 */
+
+//        if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
+//            WarningDialog();
+//        } else {
+//            startActivity(new Intent(this, MainActivity.class));
+//            finish();
+//        }
+
+        /* Dhizukuが失敗した場合はエラー */
+        new AlertDialog.Builder(this)
+                .setCancelable(false)
+                .setTitle(R.string.dialog_cpad_title_start_error)
+                .setMessage(R.string.dialog_cpad_error_installer)
+                .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> finishAndRemoveTask())
+                .show();
     }
 
     ServiceConnection mDeviceOwnerServiceConnection = new ServiceConnection() {
@@ -298,6 +328,11 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
         } catch (Exception ignored) {
             return false;
         }
+    }
+
+    /* CPadCustomizeToolがデバイスオーナーかどうか */
+    public boolean isODeviceOwner() throws RemoteException {
+        return mDeviceOwnerService.isDeviceOwnerApp();
     }
 
     private void showUpdateDialog(String str) {
@@ -348,6 +383,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
         list.add("ADB");
         list.add("デバイスオーナー");
         list.add("CPad Customize Tool");
+        list.add("Dhizuku");
         List<UpdateModeView.AppData> dataList = new ArrayList<>();
         int i = 0;
         for (String str : list) {
@@ -474,7 +510,6 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                 .setTitle(R.string.dialog_cpad_title_notice_start)
                 .setMessage(R.string.dialog_cpad_notice_start)
                 .setPositiveButton(R.string.dialog_cpad_agree, (dialog, which) -> {
-
                     Common.SET_SETTINGS_FLAG(Constants.CPAD_SETTINGS_COMPLETED, this);
                     startActivity(new Intent(this, MainActivity.class));
                     finish();

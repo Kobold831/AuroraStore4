@@ -60,16 +60,21 @@ abstract class SessionInstallerBase(context: Context) : InstallerBase(context) {
             }
         }
 
-        if ((context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).isDeviceOwnerApp(context.packageName)) {
+        /* デバイスオーナーならxInstall、違う場合はプロセス間通信へ */
+        if ((context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).isDeviceOwnerApp(
+                context.packageName
+            )
+        ) {
             try {
                 Log.i("Writing splits to session for $packageName")
 
                 for (uri in uriList) {
                     context.contentResolver.openInputStream(uri)?.use { input ->
-                        session.openWrite("${packageName}_${System.currentTimeMillis()}", 0, -1).use {
-                            input.copyTo(it)
-                            session.fsync(it)
-                        }
+                        session.openWrite("${packageName}_${System.currentTimeMillis()}", 0, -1)
+                            .use {
+                                input.copyTo(it)
+                                session.fsync(it)
+                            }
                     }
                 }
 
@@ -98,7 +103,7 @@ abstract class SessionInstallerBase(context: Context) : InstallerBase(context) {
                     e.stackTraceToString()
                 )
             }
-        } else if (bindDeviceOwnerService()) {
+        } else if (tryBindDeviceOwnerService()) {
             oInstall(packageName, uriList)
         } else {
             removeFromInstallQueue(packageName)
@@ -126,6 +131,7 @@ abstract class SessionInstallerBase(context: Context) : InstallerBase(context) {
         return uri
     }
 
+    /* CPadCustomizeToolプロセス間通信でインストール */
     private fun oInstall(packageName: String, uriList: List<Uri>) {
         try {
             val runnable = Runnable {
@@ -149,7 +155,7 @@ abstract class SessionInstallerBase(context: Context) : InstallerBase(context) {
         }
     }
 
-    var mDeviceOwnerServiceConnection: ServiceConnection = object : ServiceConnection {
+    private var mDeviceOwnerServiceConnection: ServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(componentName: ComponentName, iBinder: IBinder) {
             mDeviceOwnerService = IDeviceOwnerService.Stub.asInterface(iBinder)
         }
@@ -158,7 +164,7 @@ abstract class SessionInstallerBase(context: Context) : InstallerBase(context) {
         }
     }
 
-    fun bindDeviceOwnerService(): Boolean {
+    private fun tryBindDeviceOwnerService(): Boolean {
         return try {
             context.bindService(
                 Common.CUSTOMIZE_TOOL_SERVICE,

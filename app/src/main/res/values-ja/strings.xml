@@ -246,7 +246,6 @@
     <string name="pref_filter_search_summary">検索フィルタを毎回リセットする。検索フィルタを保持するには無効化してください</string>
     <string name="details_no_app_match">アプリが見つかりませんでした</string>
     <string name="action_check">確認</string>
-    <string name="dialog_desc_native_split">ネイティブインストーラではバンドル(分割された)アプリをインストールできません。インストーラをセッション、Service、Rootのいずれかに変更してください。</string>
     <string name="toast_aas_token_failed">AASトークンを生成できませんでした</string>
     <string name="toast_rated_failed">評価に失敗しました</string>
     <string name="toast_rated_success">評価完了</string>

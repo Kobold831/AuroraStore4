@@ -42,28 +42,12 @@ import com.aurora.store.data.installer.InstallerService;
 import com.aurora.store.util.Common;
 import com.saradabar.cpadcustomizetool.data.service.IDeviceOwnerService;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
-import java.net.URL;
 import java.util.Collections;
-import java.util.HashMap;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 public class Updater {
 
@@ -76,22 +60,20 @@ public class Updater {
 
     public void installApk() {
         switch (Common.GET_UPDATE_MODE(activity)) {
-            case 0:
-                new AlertDialog.Builder(activity)
-                        .setCancelable(false)
-                        .setTitle(R.string.dialog_cpad_title_update)
-                        .setMessage(R.string.dialog_cpad_update_caution)
-                        .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog, which) -> {
-                            try {
-                                activity.startActivityForResult(new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.URL_WIKI_MAIN)), Constants.REQUEST_UPDATE);
-                            } catch (ActivityNotFoundException ignored) {
-                                ToastKt.toast(activity, R.string.toast_cpad_unknown_activity);
-                                activity.finish();
-                            }
-                        })
-                        .show();
-                break;
-            case 1:
+            case 0 -> new AlertDialog.Builder(activity)
+                    .setCancelable(false)
+                    .setTitle(R.string.dialog_cpad_title_update)
+                    .setMessage(R.string.dialog_cpad_update_caution)
+                    .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog, which) -> {
+                        try {
+                            activity.startActivityForResult(new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.URL_WIKI_MAIN)), Constants.REQUEST_UPDATE);
+                        } catch (ActivityNotFoundException ignored) {
+                            ToastKt.toast(activity, R.string.toast_cpad_unknown_activity);
+                            activity.finish();
+                        }
+                    })
+                    .show();
+            case 1 -> {
                 if (((DevicePolicyManager) activity.getSystemService(Context.DEVICE_POLICY_SERVICE)).isDeviceOwnerApp(activity.getPackageName())) {
                     try {
                         xInstall();
@@ -110,9 +92,9 @@ public class Updater {
                             .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
                             .show();
                 }
-                break;
-            case 2:
-                if (isBindDeviceOwnerService()) {
+            }
+            case 2 -> {
+                if (tryBindDeviceOwnerService()) {
                     oInstall();
                 } else {
                     new AlertDialog.Builder(activity)
@@ -121,7 +103,7 @@ public class Updater {
                             .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
                             .show();
                 }
-                break;
+            }
         }
     }
 
@@ -136,7 +118,7 @@ public class Updater {
         }
     };
 
-    public boolean isBindDeviceOwnerService() {
+    public boolean tryBindDeviceOwnerService() {
         try {
             return activity.bindService(Common.CUSTOMIZE_TOOL_SERVICE, mDeviceOwnerServiceConnection, Context.BIND_AUTO_CREATE);
         } catch (Exception ignored) {
@@ -223,9 +205,7 @@ public class Updater {
     }
 
     private void commitSession(PackageInstaller packageInstaller, int sessionId, Context context) {
-        PackageInstaller.Session session = null;
-        try {
-            session = packageInstaller.openSession(sessionId);
+        try (PackageInstaller.Session session = packageInstaller.openSession(sessionId)) {
             Intent intent = new Intent(context, InstallerService.class);
             PendingIntent pendingIntent = PendingIntent.getService(
                     context,
@@ -235,10 +215,6 @@ public class Updater {
             );
             session.commit(pendingIntent.getIntentSender());
         } catch (Exception ignored) {
-        } finally {
-            if (session != null) {
-                session.close();
-            }
         }
     }
 

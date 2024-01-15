@@ -463,17 +463,11 @@ class AppDetailsFragment : BaseFragment(R.layout.fragment_details) {
         updateActionState(State.IDLE)
 
         val apkFiles = files.filter { it.file.endsWith(".apk") }
-        val preferredInstaller =
-            Preferences.getInteger(requireContext(), Preferences.PREFERENCE_INSTALLER_ID)
 
-        if (apkFiles.size > 1 && preferredInstaller == 1) {
-            showDialog(R.string.title_installer, R.string.dialog_desc_native_split)
-        } else {
-            viewModel.install(requireContext(), app.packageName, apkFiles.map { it.file })
+        viewModel.install(requireContext(), app.packageName, apkFiles.map { it.file })
 
-            runOnUiThread {
-                binding.layoutDetailsInstall.btnDownload.setText(getString(R.string.action_installing))
-            }
+        runOnUiThread {
+            binding.layoutDetailsInstall.btnDownload.setText(getString(R.string.action_installing))
         }
     }
 

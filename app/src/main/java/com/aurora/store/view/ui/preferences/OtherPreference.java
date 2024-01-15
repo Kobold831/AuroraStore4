@@ -91,6 +91,7 @@ public class OtherPreference extends PreferenceFragmentCompat {
             list.add("ADB");
             list.add("デバイスオーナー");
             list.add("CPad Customize Tool");
+            list.add("Dhizuku");
             List<UpdateModeView.AppData> dataList = new ArrayList<>();
             int i = 0;
             for (String str : list) {

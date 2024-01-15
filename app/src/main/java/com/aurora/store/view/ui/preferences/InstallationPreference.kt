@@ -68,10 +68,11 @@ class InstallationPreference : PreferenceFragmentCompat() {
                 Preference.OnPreferenceChangeListener { _, newValue ->
                     val selectedId = Integer.parseInt(newValue as String)
                     when (selectedId) {
+                        /* セッションインストーラー（デバイスオーナーまたはCPadCustomizeTool） */
                         0 -> {
                             false
                         }
-
+                        /* Dhizukuインストーラー */
                         else -> {
                             false
                         }
