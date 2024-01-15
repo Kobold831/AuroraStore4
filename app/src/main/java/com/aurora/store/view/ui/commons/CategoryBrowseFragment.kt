@@ -35,9 +35,8 @@ import com.aurora.store.view.custom.recycler.EndlessRecyclerOnScrollListener
 import com.aurora.store.view.epoxy.controller.CategoryCarouselController
 import com.aurora.store.view.epoxy.controller.GenericCarouselController
 import com.aurora.store.viewmodel.subcategory.SubCategoryClusterViewModel
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
+
 class CategoryBrowseFragment : BaseFragment(R.layout.activity_generic_recycler),
     GenericCarouselController.Callbacks {
 

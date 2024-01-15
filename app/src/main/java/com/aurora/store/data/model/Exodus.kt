@@ -21,6 +21,11 @@ package com.aurora.store.data.model
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import java.text.DateFormat
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.Locale
+
 data class ExodusReport(
     val creator: String = String(),
     val name: String = String(),
@@ -36,7 +41,20 @@ data class Report(
     val updatedAt: String = String(),
     val versionCode: String = String(),
     val trackers: List<Int> = listOf()
-) : Parcelable
+) : Parcelable {
+
+    fun getFormattedCreationDate(): String {
+        return try {
+            val simpleDateFormat: DateFormat = SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                Locale.getDefault()
+            )
+            simpleDateFormat.parse(creationDate).toString()
+        } catch (e: ParseException) {
+            ""
+        }
+    }
+}
 
 data class ExodusTracker(
     var id: Int = 0,

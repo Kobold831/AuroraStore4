@@ -38,7 +38,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn"
-                style="@style/Widget.Material3.Button.TextButton.Dialog.Flush"
+                style="@style/Widget.MaterialComponents.Button.TextButton.Dialog.Flush"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_centerHorizontal="true"
@@ -47,6 +47,18 @@
                 app:iconPadding="@dimen/padding_large"
                 app:iconTint="@color/colorWhite"
                 tools:text="Install" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.aurora.store.view.custom.progress.AuroraProgressView
+                android:id="@+id/progress"
+                android:layout_width="@dimen/icon_size_small"
+                android:layout_height="@dimen/icon_size_small"
+                android:layout_centerInParent="true"
+                tools:indicatorColor="@color/colorAccent" />
         </RelativeLayout>
 
         <RelativeLayout

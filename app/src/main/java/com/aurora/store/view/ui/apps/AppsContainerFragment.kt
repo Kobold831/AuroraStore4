@@ -20,11 +20,14 @@
 package com.aurora.store.view.ui.apps
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.aurora.gplayapi.data.models.AuthData
 import com.aurora.store.R
 import com.aurora.store.data.providers.AuthProvider
 import com.aurora.store.databinding.FragmentAppsGamesBinding
@@ -35,35 +38,50 @@ import com.aurora.store.view.ui.commons.ForYouFragment
 import com.aurora.store.view.ui.commons.TopChartContainerFragment
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
-class AppsContainerFragment : Fragment(R.layout.fragment_apps_games) {
 
-    private var _binding: FragmentAppsGamesBinding? = null
-    private val binding get() = _binding!!
+class AppsContainerFragment : Fragment() {
+
+    private lateinit var B: FragmentAppsGamesBinding
+    private lateinit var authData: AuthData
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        B = FragmentAppsGamesBinding.bind(
+            inflater.inflate(
+                R.layout.fragment_apps_games,
+                container,
+                false
+            )
+        )
+        return B.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentAppsGamesBinding.bind(view)
+        authData = AuthProvider.with(requireContext()).getAuthData()
+        setupViewPager()
+    }
 
-        // ViewPager
+    private fun setupViewPager() {
         val isForYouEnabled = Preferences.getBoolean(
             requireContext(),
             Preferences.PREFERENCE_FOR_YOU
         )
 
-        val isGoogleAccount = !AuthProvider.with(requireContext()).getAuthData().isAnonymous
+        val isGoogleAccount = !authData.isAnonymous
 
-        binding.pager.adapter = ViewPagerAdapter(
+        B.pager.adapter = ViewPagerAdapter(
             childFragmentManager,
             lifecycle,
             isGoogleAccount,
             isForYouEnabled
         )
 
-        binding.pager.isUserInputEnabled =
-            false //Disable viewpager scroll to avoid scroll conflicts
+        B.pager.isUserInputEnabled = false //Disable viewpager scroll to avoid scroll conflicts
 
         val tabTitles: MutableList<String> = mutableListOf<String>().apply {
             if (isForYouEnabled) {
@@ -78,18 +96,9 @@ class AppsContainerFragment : Fragment(R.layout.fragment_apps_games) {
             }
         }
 
-        TabLayoutMediator(
-            binding.tabLayout,
-            binding.pager,
-            true
-        ) { tab: TabLayout.Tab, position: Int ->
+        TabLayoutMediator(B.tabLayout, B.pager, true) { tab: TabLayout.Tab, position: Int ->
             tab.text = tabTitles[position]
         }.attach()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     internal class ViewPagerAdapter(

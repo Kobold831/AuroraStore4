@@ -21,14 +21,12 @@
 package com.aurora.store
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.os.PowerManager
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
@@ -55,7 +53,6 @@ import coil.transform.RoundedCornersTransformation
 import com.aurora.Constants
 import com.aurora.extensions.accentColor
 import com.aurora.extensions.applyThemeAccent
-import com.aurora.extensions.isMAndAbove
 import com.aurora.extensions.isRAndAbove
 import com.aurora.extensions.toast
 import com.aurora.store.data.model.NetworkStatus
@@ -66,10 +63,9 @@ import com.aurora.store.util.Preferences
 import com.aurora.store.util.Preferences.PREFERENCE_DEFAULT_SELECTED_TAB
 import com.aurora.store.view.ui.sheets.NetworkDialogSheet
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
-@AndroidEntryPoint
+
 class MainActivity : AppCompatActivity() {
 
     private lateinit var B: ActivityMainBinding
@@ -199,12 +195,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
-
-        // Show warning if battery optimizations is enabled
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        if (isMAndAbove() && !powerManager.isIgnoringBatteryOptimizations(packageName)) {
-            menu.findItem(R.id.menu_doze_info)?.isVisible = true
-        }
         return true
     }
 
@@ -212,10 +202,6 @@ class MainActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.menu_download_manager -> {
                 navController.navigate(R.id.downloadFragment)
-                return true
-            }
-            R.id.menu_doze_info -> {
-                navController.navigate(R.id.dozeWarningSheet)
                 return true
             }
         }

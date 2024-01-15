@@ -34,17 +34,6 @@
         <item name="android:textAppearance">@style/TextAppearance.Aurora.Title.Rating</item>
     </style>
 
-    <style name="AuroraTextStyle.Title" parent="AuroraTextStyle">
-        <item name="android:maxLines">1</item>
-        <item name="android:ellipsize">end</item>
-        <item name="autoSizeMaxTextSize">20sp</item>
-        <item name="android:textAppearance">@style/TextAppearance.Aurora.Title</item>
-    </style>
-
-    <style name="AuroraTextStyle.Title.Primary" parent="AuroraTextStyle.Title">
-        <item name="android:textAppearance">@style/TextAppearance.Aurora.Title.Primary</item>
-    </style>
-
     <style name="TextAppearance.Aurora.Title" parent="TextAppearance.AppCompat.Medium">
         <item name="android:letterSpacing">0.05</item>
         <item name="android:maxLines">1</item>
@@ -73,11 +62,6 @@
     <style name="AuroraTextStyle.Subtitle.Alt" parent="AuroraTextStyle">
         <item name="autoSizeMaxTextSize">18sp</item>
         <item name="android:textAppearance">@style/TextAppearance.Aurora.SubTitle.Alt</item>
-    </style>
-
-    <style name="AuroraTextStyle.Subtitle.Secondary" parent="AuroraTextStyle">
-        <item name="autoSizeMaxTextSize">16sp</item>
-        <item name="android:textAppearance">@style/TextAppearance.Aurora.Line1</item>
     </style>
 
     <style name="TextAppearance.Aurora.SubTitle" parent="TextAppearance.Aurora.Title">

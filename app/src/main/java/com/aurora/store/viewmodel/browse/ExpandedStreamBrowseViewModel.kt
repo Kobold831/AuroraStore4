@@ -38,7 +38,7 @@ class ExpandedStreamBrowseViewModel(application: Application) : BaseAndroidViewM
 
     private val authData: AuthData = AuthProvider.with(application).getAuthData()
     private val streamHelper: ExpandedBrowseHelper = ExpandedBrowseHelper(authData)
-        .using(HttpClient.getPreferredClient(application))
+        .using(HttpClient.getPreferredClient())
 
     val liveData: MutableLiveData<StreamCluster> = MutableLiveData()
     var streamCluster: StreamCluster = StreamCluster()

@@ -41,6 +41,7 @@ open class AppInstaller private constructor(var context: Context) {
                 else -> context.getString(R.string.installer_status_failure)
             }
         }
+
         fun getInstance(context: Context): AppInstaller {
             if (instance == null) {
                 instance = AppInstaller(context.applicationContext)
@@ -61,8 +62,18 @@ open class AppInstaller private constructor(var context: Context) {
             return choiceAndInstaller[prefValue]!!
         }
 
-        val installer = SessionInstaller(context)
-        choiceAndInstaller[prefValue] = installer
-        return installer
+        return when (prefValue) {
+            1 -> {
+                val installer = SessionInstaller(context)
+                choiceAndInstaller[prefValue] = installer
+                installer
+            }
+
+            else -> {
+                val installer = SessionInstaller(context)
+                choiceAndInstaller[prefValue] = installer
+                installer
+            }
+        }
     }
 }

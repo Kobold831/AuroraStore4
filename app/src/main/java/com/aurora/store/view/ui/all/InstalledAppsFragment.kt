@@ -32,9 +32,7 @@ import com.aurora.store.view.epoxy.views.app.AppListViewModel_
 import com.aurora.store.view.epoxy.views.shimmer.AppListViewShimmerModel_
 import com.aurora.store.view.ui.commons.BaseFragment
 import com.aurora.store.viewmodel.all.InstalledViewModel
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 class InstalledAppsFragment : BaseFragment() {
 
     private lateinit var VM: InstalledViewModel
@@ -61,7 +59,6 @@ class InstalledAppsFragment : BaseFragment() {
         )
 
         VM = ViewModelProvider(requireActivity())[InstalledViewModel::class.java]
-        VM.observe()
 
         return B.root
     }

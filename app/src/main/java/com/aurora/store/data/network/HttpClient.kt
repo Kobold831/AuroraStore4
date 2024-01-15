@@ -19,32 +19,11 @@
 
 package com.aurora.store.data.network
 
-import android.content.Context
-import com.aurora.store.data.model.ProxyInfo
-import com.aurora.store.util.Log
-import com.aurora.store.util.Preferences
-import com.google.gson.Gson
+import com.aurora.gplayapi.network.IHttpClient
 
 object HttpClient {
-    fun getPreferredClient(context: Context): IProxyHttpClient {
-        val proxyEnabled = Preferences.getBoolean(
-            context,
-            Preferences.PREFERENCE_PROXY_ENABLED
-        )
 
-        return if (proxyEnabled) {
-            val proxyInfoString = Preferences.getString(context, Preferences.PREFERENCE_PROXY_INFO)
-            val proxyInfo = Gson().fromJson(proxyInfoString, ProxyInfo::class.java)
-
-            if (proxyInfo != null) {
-                OkHttpClient.setProxy(proxyInfo)
-            } else {
-                Log.e("Proxy info is unavailable, using default client")
-                OkHttpClient
-            }
-        } else {
-            Log.i("Proxy is disabled")
-            OkHttpClient
-        }
+    fun getPreferredClient(): IHttpClient {
+        return OkHttpClient
     }
 }

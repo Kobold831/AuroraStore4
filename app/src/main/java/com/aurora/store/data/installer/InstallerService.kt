@@ -23,7 +23,6 @@ import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.os.IBinder
-import androidx.core.content.IntentCompat
 import com.aurora.store.R
 import com.aurora.store.data.event.InstallerEvent
 import com.aurora.store.util.Log
@@ -46,8 +45,7 @@ class InstallerService : Service() {
     }
 
     private fun promptUser(intent: Intent) {
-        val confirmationIntent =
-            IntentCompat.getParcelableExtra(intent, Intent.EXTRA_INTENT, Intent::class.java)
+        val confirmationIntent: Intent? = intent.getParcelableExtra(Intent.EXTRA_INTENT)
 
         confirmationIntent?.let {
             it.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)

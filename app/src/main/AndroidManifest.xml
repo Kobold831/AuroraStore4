@@ -99,15 +99,9 @@
             <nav-graph android:value="@navigation/mobile_navigation" />
         </activity>
 
-        <activity
-            android:name=".data.activity.InstallActivity"
-            android:exported="false"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-
-        <service
-            android:name="androidx.work.impl.foreground.SystemForegroundService"
-            android:foregroundServiceType="dataSync"
-            tools:node="merge" />
+        <service android:name=".data.service.NotificationService" />
+        <service android:name=".data.installer.InstallerService" />
+        <service android:name=".data.service.UpdateService" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -119,22 +113,9 @@
                 android:resource="@xml/paths" />
         </provider>
 
-        <!-- Hilt (WorkManager) -->
-        <provider
-            android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
-            android:exported="false"
-            tools:node="merge">
-            <!-- If you are using androidx.startup to initialize other components -->
-            <meta-data
-                android:name="androidx.work.WorkManagerInitializer"
-                android:value="androidx.startup"
-                tools:node="remove" />
-        </provider>
-
-        <receiver
-            android:name=".data.receiver.InstallerStatusReceiver"
-            android:exported="false" />
+        <receiver android:name=".data.receiver.DownloadResumeReceiver" />
+        <receiver android:name=".data.receiver.DownloadPauseReceiver" />
+        <receiver android:name=".data.receiver.DownloadCancelReceiver" />
 
         <service
             android:name=".data.service.ResultService"

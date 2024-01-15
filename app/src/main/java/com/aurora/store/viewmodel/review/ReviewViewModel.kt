@@ -41,7 +41,7 @@ class ReviewViewModel(application: Application) : BaseAndroidViewModel(applicati
         .getAuthData()
 
     var reviewsHelper: ReviewsHelper = ReviewsHelper(authData)
-        .using(HttpClient.getPreferredClient(application))
+        .using(HttpClient.getPreferredClient())
 
     val liveData: MutableLiveData<ReviewCluster> = MutableLiveData()
 

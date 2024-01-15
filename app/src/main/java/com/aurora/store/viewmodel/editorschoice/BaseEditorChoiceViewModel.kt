@@ -40,7 +40,7 @@ open class BaseEditorChoiceViewModel(application: Application) : BaseAndroidView
         .getAuthData()
 
     private val streamHelper: StreamHelper = StreamHelper(authData)
-        .using(HttpClient.getPreferredClient(application))
+        .using(HttpClient.getPreferredClient())
 
     lateinit var category: StreamHelper.Category
 

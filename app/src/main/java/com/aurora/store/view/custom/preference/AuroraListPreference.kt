@@ -55,6 +55,6 @@ class AuroraListPreference : ListPreference {
     }
 
     override fun persistString(value: String?): Boolean {
-        return if (value != null) persistInt(Integer.valueOf(value)) else false
+        return persistInt(Integer.valueOf(value))
     }
 }

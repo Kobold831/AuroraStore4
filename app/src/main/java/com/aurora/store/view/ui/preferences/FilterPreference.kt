@@ -25,9 +25,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceFragmentCompat
 import com.aurora.store.R
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 class FilterPreference : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {

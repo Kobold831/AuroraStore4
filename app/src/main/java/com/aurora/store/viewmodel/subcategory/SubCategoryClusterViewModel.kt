@@ -40,7 +40,7 @@ class SubCategoryClusterViewModel(application: Application) : BaseAndroidViewMod
 
     var authData: AuthData = AuthProvider.with(application).getAuthData()
     var categoryHelper: CategoryHelper = CategoryHelper(authData)
-        .using(HttpClient.getPreferredClient(application))
+        .using(HttpClient.getPreferredClient())
 
     val liveData: MutableLiveData<ViewState> = MutableLiveData()
     var streamBundle: StreamBundle = StreamBundle()

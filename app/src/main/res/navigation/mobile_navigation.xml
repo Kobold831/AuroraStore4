@@ -437,8 +437,8 @@
         android:label="DownloadMenuSheet"
         tools:layout="@layout/sheet_download_menu">
         <argument
-            android:name="download"
-            app:argType="com.aurora.store.data.room.download.Download" />
+            android:name="downloadFile"
+            app:argType="com.aurora.store.data.model.DownloadFile" />
     </dialog>
     <dialog
         android:id="@+id/deviceMiuiSheet"
@@ -463,9 +463,4 @@
             android:name="extra"
             app:argType="string" />
     </dialog>
-    <dialog
-        android:id="@+id/dozeWarningSheet"
-        android:name="com.aurora.store.view.ui.sheets.DozeWarningSheet"
-        android:label="DozeWarningSheet"
-        tools:layout="@layout/sheet_doze_warning"/>
 </navigation>

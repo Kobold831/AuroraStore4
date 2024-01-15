@@ -32,9 +32,8 @@ import com.aurora.store.view.epoxy.views.CategoryViewModel_
 import com.aurora.store.viewmodel.category.AppCategoryViewModel
 import com.aurora.store.viewmodel.category.BaseCategoryViewModel
 import com.aurora.store.viewmodel.category.GameCategoryViewModel
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
+
 class CategoryFragment : BaseFragment() {
 
     private lateinit var B: FragmentGenericRecyclerBinding

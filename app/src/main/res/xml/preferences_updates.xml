@@ -17,16 +17,8 @@
   ~
   -->
 
-<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <SwitchPreferenceCompat
-        app:defaultValue="false"
-        app:iconSpaceReserved="false"
-        app:key="PREFERENCE_SELF_UPDATE"
-        app:singleLineTitle="false"
-        app:summary="@string/pref_self_update_summary"
-        app:title="@string/pref_self_update_title" />
+<androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <SwitchPreferenceCompat
         app:defaultValue="false"
@@ -35,23 +27,11 @@
         app:summary="@string/pref_updates_extended_desc"
         app:title="@string/pref_updates_extended" />
 
-    <com.aurora.store.view.custom.preference.AuroraListPreference
-        app:defaultValue="2"
-        app:entries="@array/pref_updates_auto"
-        app:entryValues="@array/pref_updates_auto_values"
+    <SwitchPreferenceCompat
+        app:defaultValue="true"
         app:iconSpaceReserved="false"
-        app:key="PREFERENCE_UPDATES_AUTO"
-        app:summary="@string/pref_updates_auto_desc"
-        app:title="@string/pref_updates_auto" />
+        app:key="PREFERENCE_UPDATES_CHECK"
+        app:summary="@string/pref_updates_check_desc"
+        app:title="@string/pref_updates_check" />
 
-    <SeekBarPreference
-        android:defaultValue="3"
-        android:key="PREFERENCE_UPDATES_CHECK_INTERVAL"
-        android:max="24"
-        android:summary="@string/pref_updates_check_frequency_desc"
-        android:title="@string/pref_updates_check_frequency"
-        app:adjustable="true"
-        app:iconSpaceReserved="false"
-        app:min="1"
-        app:showSeekBarValue="true" />
 </androidx.preference.PreferenceScreen>

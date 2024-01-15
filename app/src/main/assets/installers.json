@@ -2,8 +2,13 @@
   {
     "id": "0",
     "title": "セッションインストーラー",
-    "subtitle": "バンドル / 分割APKセッションインストーラー",
-    "description": "Android 5.0以降を実行するデバイスに最適",
-    "url": "https://developer.android.com/reference/android/content/pm/PackageInstaller.Session"
+    "subtitle": "デバイスオーナーまたはCPad CustomizeToolを使用してインストールします",
+    "description": "デバイスオーナーがAuroraStoreまたはCPad CustomizeToolに設定されていることを確認してください"
+  },
+  {
+    "id": "1",
+    "title": "Dhizukuインストーラー",
+    "subtitle": "Dhizukuを使用してインストールします",
+    "description": "Dhizukuから権限を承認する必要があります"
   }
 ]

@@ -28,13 +28,10 @@ import com.aurora.extensions.isNAndAbove
 import com.aurora.extensions.isOAndAbove
 import com.aurora.extensions.isSAndAbove
 import com.aurora.extensions.isTAndAbove
-import com.aurora.extensions.isUAndAbove
 import com.aurora.store.util.Log
-import kotlin.properties.Delegates
+
 
 class SessionInstaller(context: Context) : SessionInstallerBase(context) {
-
-    var sessionId by Delegates.notNull<Int>()
 
     override fun install(packageName: String, files: List<Any>) {
         if (isAlreadyQueued(packageName)) {
@@ -57,12 +54,9 @@ class SessionInstaller(context: Context) : SessionInstallerBase(context) {
                 if (isTAndAbove()) {
                     setPackageSource(PACKAGE_SOURCE_STORE)
                 }
-                if (isUAndAbove()) {
-                    setInstallerPackageName(context.packageName)
-                }
             }
 
-            sessionId = packageInstaller.createSession(sessionParams)
+            val sessionId = packageInstaller.createSession(sessionParams)
             val session = packageInstaller.openSession(sessionId)
 
             xInstall(sessionId, session, packageName, files)

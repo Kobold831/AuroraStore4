@@ -56,10 +56,7 @@
     <color name="colorTransparent">#00000000</color>
 
     <!--Tab Colors-->
-    <color name="colorTabSelected">@color/colorAccent</color>
     <color name="colorTabDefault">@color/colorScrim</color>
-    <color name="txtTabDefault">#44F2F2F2</color>
-    <color name="txtTabSelected">#F2F2F2</color>
 
     <!--Scrim Colors-->
     <color name="colorScrim">#22000000</color>
@@ -67,7 +64,6 @@
     <color name="colorScrimAccent">#446C63FF</color>
     <color name="colorScrimBlack">#30000000</color>
 
-    <color name="colorBlue">#4768FD</color>
     <color name="colorRed">#E4002B</color>
     <color name="colorRedAlt">#ff4c4c</color>
     <color name="colorOrange">#FF9933</color>

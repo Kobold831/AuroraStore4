@@ -35,7 +35,6 @@ import androidx.core.content.FileProvider
 import com.aurora.extensions.isSAndAbove
 import com.aurora.store.BuildConfig
 import com.aurora.store.R
-import com.aurora.store.data.receiver.InstallerStatusReceiver
 import com.aurora.store.util.Common
 import com.aurora.store.util.Log
 import com.saradabar.cpadcustomizetool.data.service.IDeviceOwnerService
@@ -61,7 +60,7 @@ abstract class SessionInstallerBase(context: Context) : InstallerBase(context) {
             }
         }
 
-        if ((context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).isDeviceOwnerApp(context.getPackageName())) {
+        if ((context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).isDeviceOwnerApp(context.packageName)) {
             try {
                 Log.i("Writing splits to session for $packageName")
 
@@ -74,17 +73,12 @@ abstract class SessionInstallerBase(context: Context) : InstallerBase(context) {
                     }
                 }
 
-                val callBackIntent = Intent(context, InstallerStatusReceiver::class.java).apply {
-                    action = InstallerStatusReceiver.ACTION_INSTALL_STATUS
-                    setPackage(context.packageName)
-                    putExtra(PackageInstaller.EXTRA_PACKAGE_NAME, packageName)
-                    addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
-                }
+                val callBackIntent = Intent(context, InstallerService::class.java)
                 val flags = if (isSAndAbove())
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE else
                     PendingIntent.FLAG_UPDATE_CURRENT
 
-                val pendingIntent = PendingIntent.getBroadcast(
+                val pendingIntent = PendingIntent.getService(
                     context,
                     sessionId,
                     callBackIntent,

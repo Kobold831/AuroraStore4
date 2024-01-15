@@ -21,6 +21,7 @@
 package com.aurora.store.view.ui.onboarding
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -44,9 +45,7 @@ import com.aurora.store.databinding.FragmentOnboardingPermissionsBinding
 import com.aurora.store.util.isExternalStorageAccessible
 import com.aurora.store.view.epoxy.views.preference.PermissionViewModel_
 import com.aurora.store.view.ui.commons.BaseFragment
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 class PermissionsFragment : BaseFragment(R.layout.fragment_onboarding_permissions) {
 
     private var _binding: FragmentOnboardingPermissionsBinding? = null
@@ -60,20 +59,6 @@ class PermissionsFragment : BaseFragment(R.layout.fragment_onboarding_permission
                     toast(R.string.toast_permission_granted)
                     binding.epoxyRecycler.requestModelBuild()
                 }
-            }
-        }
-    private val startForPackageManagerResult =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (isOAndAbove() && requireContext().packageManager.canRequestPackageInstalls()) {
-                toast(R.string.toast_permission_granted)
-                binding.epoxyRecycler.requestModelBuild()
-            }
-        }
-    private val startForStorageManagerResult =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (isRAndAbove() && Environment.isExternalStorageManager()) {
-                toast(R.string.toast_permission_granted)
-                binding.epoxyRecycler.requestModelBuild()
             }
         }
     private val startForPermissions =
@@ -102,19 +87,9 @@ class PermissionsFragment : BaseFragment(R.layout.fragment_onboarding_permission
         if (isMAndAbove()) {
             installerList.add(
                 Permission(
-                    4,
+                    1,
                     getString(R.string.onboarding_permission_doze),
                     getString(R.string.onboarding_permission_doze_desc)
-                )
-            )
-        }
-
-        if (isTAndAbove()) {
-            installerList.add(
-                Permission(
-                    3,
-                    getString(R.string.onboarding_permission_notifications),
-                    getString(R.string.onboarding_permission_notifications_desc)
                 )
             )
         }
@@ -128,16 +103,6 @@ class PermissionsFragment : BaseFragment(R.layout.fragment_onboarding_permission
             }
             val writeExternalStorage =
                 if (!isRAndAbove()) isExternalStorageAccessible(requireContext()) else true
-            val postNotifications = if (isTAndAbove()) ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED else true
-            val storageManager = if (isRAndAbove()) Environment.isExternalStorageManager() else true
-            val canInstallPackages = if (isOAndAbove()) {
-                requireContext().packageManager.canRequestPackageInstalls()
-            } else {
-                true
-            }
 
             setFilterDuplicates(true)
             installerList.forEach {
@@ -148,20 +113,14 @@ class PermissionsFragment : BaseFragment(R.layout.fragment_onboarding_permission
                         .isGranted(
                             when (it.id) {
                                 0 -> writeExternalStorage
-                                1 -> storageManager
-                                2 -> canInstallPackages
-                                3 -> postNotifications
-                                4 -> dozeDisabled
+                                1 -> dozeDisabled
                                 else -> false
                             }
                         )
                         .click { _ ->
                             when (it.id) {
                                 0 -> checkStorageAccessPermission()
-                                1 -> requestStorageManagerPermission()
-                                2 -> requestPackageManagerPermission()
-                                3 -> checkPostNotificationsPermission()
-                                4 -> requestDozePermission()
+                                1 -> requestDozePermission()
                             }
                         }
                 )
@@ -174,6 +133,7 @@ class PermissionsFragment : BaseFragment(R.layout.fragment_onboarding_permission
         _binding = null
     }
 
+    @SuppressLint("BatteryLife")
     private fun requestDozePermission() {
         if (isMAndAbove()) {
             val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
@@ -186,30 +146,4 @@ class PermissionsFragment : BaseFragment(R.layout.fragment_onboarding_permission
     private fun checkStorageAccessPermission() {
         startForPermissions.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     }
-
-    private fun checkPostNotificationsPermission() {
-        if (isTAndAbove()) {
-            startForPermissions.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
-    }
-
-    private fun requestStorageManagerPermission() {
-        if (isRAndAbove()) {
-            startForStorageManagerResult.launch(
-                Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-            )
-        }
-    }
-
-    private fun requestPackageManagerPermission() {
-        if (isOAndAbove()) {
-            startForPackageManagerResult.launch(
-                Intent(
-                    Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                    Uri.parse("package:${BuildConfig.APPLICATION_ID}")
-                )
-            )
-        }
-    }
-
 }

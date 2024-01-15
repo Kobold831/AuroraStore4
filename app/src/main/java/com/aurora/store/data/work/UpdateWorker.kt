@@ -8,7 +8,6 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE
 import androidx.core.content.pm.PackageInfoCompat
-import androidx.hilt.work.HiltWorker
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy.KEEP
@@ -18,7 +17,6 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.aurora.Constants
-import com.aurora.extensions.isMAndAbove
 import com.aurora.gplayapi.data.models.App
 import com.aurora.gplayapi.data.models.AuthData
 import com.aurora.gplayapi.helpers.AppDetailsHelper
@@ -28,59 +26,43 @@ import com.aurora.store.R
 import com.aurora.store.data.network.HttpClient
 import com.aurora.store.data.providers.AuthProvider
 import com.aurora.store.data.providers.BlacklistProvider
-import com.aurora.store.util.CertUtil
-import com.aurora.store.util.DownloadWorkerUtil
 import com.aurora.store.util.Log
 import com.aurora.store.util.PackageUtil
 import com.aurora.store.util.Preferences
-import com.aurora.store.util.Preferences.PREFERENCE_UPDATES_AUTO
-import com.aurora.store.util.Preferences.PREFERENCE_UPDATES_CHECK_INTERVAL
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit.HOURS
 import java.util.concurrent.TimeUnit.MINUTES
 
-@HiltWorker
-class UpdateWorker @AssistedInject constructor(
-    val downloadWorkerUtil: DownloadWorkerUtil,
-    @Assisted private val appContext: Context,
-    @Assisted workerParams: WorkerParameters
-) : CoroutineWorker(appContext, workerParams) {
+class UpdateWorker(private val appContext: Context, workerParams: WorkerParameters) :
+    CoroutineWorker(appContext, workerParams) {
 
     companion object {
-        private const val UPDATE_WORKER = "UPDATE_WORKER"
+        private const val WORK_NAME_CHECK = "WORK_NAME_CHECK"
 
         fun cancelAutomatedCheck(context: Context) {
-            Log.i("Cancelling periodic app updates!")
-            WorkManager.getInstance(context).cancelUniqueWork(UPDATE_WORKER)
+            Log.i("Cancelling periodic app updates check!")
+            WorkManager.getInstance(context)
+                .cancelUniqueWork(WORK_NAME_CHECK)
         }
 
         fun scheduleAutomatedCheck(context: Context) {
-            Log.i("Scheduling periodic app updates!")
-
-            val updateCheckInterval = Preferences.getInteger(
-                context,
-                PREFERENCE_UPDATES_CHECK_INTERVAL,
-                3
-            ).toLong()
+            Log.i("Scheduling periodic app updates check!")
 
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.UNMETERED)
+                .setRequiresDeviceIdle(true)
                 .setRequiresBatteryNotLow(true)
-
-            if (isMAndAbove()) constraints.setRequiresDeviceIdle(true)
-
+                .build()
             val workRequest = PeriodicWorkRequestBuilder<UpdateWorker>(
-                repeatInterval = updateCheckInterval,
+                repeatInterval = 3,
                 repeatIntervalTimeUnit = HOURS,
                 flexTimeInterval = 30,
                 flexTimeIntervalUnit = MINUTES
-            ).setConstraints(constraints.build()).build()
+            ).setConstraints(constraints).build()
 
             val workManager = WorkManager.getInstance(context)
-            workManager.enqueueUniquePeriodicWork(UPDATE_WORKER, KEEP, workRequest)
+            workManager.enqueueUniquePeriodicWork(WORK_NAME_CHECK, KEEP, workRequest)
         }
     }
 
@@ -105,14 +87,6 @@ class UpdateWorker @AssistedInject constructor(
     }
 
     override suspend fun doWork(): Result {
-        val autoUpdatesMode = Preferences.getInteger(appContext, PREFERENCE_UPDATES_AUTO, 3)
-
-        // Exit if auto-updates is turned off in settings
-        if (autoUpdatesMode == 0) {
-            Log.i("Auto-updates is disabled, bailing out!")
-            return Result.failure()
-        }
-
         withContext(Dispatchers.IO) {
 
             if (!isValid(authData)) {
@@ -123,7 +97,7 @@ class UpdateWorker @AssistedInject constructor(
             Log.i("Checking for app updates")
 
             val appDetailsHelper = AppDetailsHelper(authData)
-                .using(HttpClient.getPreferredClient(appContext))
+                .using(HttpClient.getPreferredClient())
 
             val isGoogleFilterEnabled = Preferences.getBoolean(
                 appContext,
@@ -152,25 +126,13 @@ class UpdateWorker @AssistedInject constructor(
                     } else {
                         false
                     }
-                }.filter { app ->
-                    app.certificateSetList.any {
-                        it.certificateSet in CertUtil.getEncodedCertificateHashes(
-                            appContext,
-                            app.packageName
-                        )
-                    }
                 }
 
                 if (updatesList.isNotEmpty()) {
-                    if (autoUpdatesMode == 1) {
-                        Log.i("Found updates, notifying!")
-                        val notifyManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE)
-                                as NotificationManager
-                        notifyManager.notify(notificationID, getUpdateNotification(updatesList))
-                    } else {
-                        Log.i("Found updates, updating!")
-                        updatesList.forEach { downloadWorkerUtil.enqueueApp(it) }
-                    }
+                    Log.i("Found updates, notifying!")
+                    val notifyManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE)
+                            as NotificationManager
+                    notifyManager.notify(notificationID, getUpdateNotification(updatesList))
                     return@withContext Result.success()
                 }
 
@@ -178,13 +140,13 @@ class UpdateWorker @AssistedInject constructor(
                 return@withContext Result.success()
             }
         }
-        return Result.success()
+        return Result.failure()
     }
 
     private fun isValid(authData: AuthData): Boolean {
         return try {
             AuthValidator(authData)
-                .using(HttpClient.getPreferredClient(appContext))
+                .using(HttpClient.getPreferredClient())
                 .isValid()
         } catch (e: Exception) {
             false
@@ -202,7 +164,7 @@ class UpdateWorker @AssistedInject constructor(
         )
 
         return NotificationCompat.Builder(appContext, Constants.NOTIFICATION_CHANNEL_UPDATES)
-            .setSmallIcon(R.drawable.ic_updates)
+            .setSmallIcon(R.drawable.ic_logo)
             .setContentTitle(
                 if (updatesList.size == 1)
                     appContext.getString(

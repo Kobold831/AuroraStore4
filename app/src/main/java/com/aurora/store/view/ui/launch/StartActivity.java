@@ -54,7 +54,6 @@ import com.aurora.store.data.event.DownloadEventListener;
 import com.aurora.store.data.handler.ProgressHandler;
 import com.aurora.store.util.Common;
 import com.aurora.store.util.Variables;
-import com.aurora.store.view.epoxy.views.UpdateHeaderView;
 import com.aurora.store.view.epoxy.views.UpdateModeView;
 import com.saradabar.cpadcustomizetool.data.service.IDeviceOwnerService;
 

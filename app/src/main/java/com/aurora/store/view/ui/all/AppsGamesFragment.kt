@@ -33,9 +33,7 @@ import com.aurora.store.data.providers.AuthProvider
 import com.aurora.store.databinding.ActivityGenericPagerBinding
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 class AppsGamesFragment : Fragment(R.layout.activity_generic_pager) {
 
     private var _binding: ActivityGenericPagerBinding? = null

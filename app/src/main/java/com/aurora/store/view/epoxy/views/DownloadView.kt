@@ -27,14 +27,17 @@ import coil.transform.RoundedCornersTransformation
 import com.airbnb.epoxy.CallbackProp
 import com.airbnb.epoxy.ModelProp
 import com.airbnb.epoxy.ModelView
+import com.aurora.Constants
+import com.aurora.gplayapi.data.models.App
 import com.aurora.store.R
-import com.aurora.store.data.model.DownloadStatus
-import com.aurora.store.data.room.download.Download
+import com.aurora.store.data.model.DownloadFile
 import com.aurora.store.databinding.ViewDownloadBinding
 import com.aurora.store.util.CommonUtil.getDownloadSpeedString
 import com.aurora.store.util.CommonUtil.getETAString
+import com.aurora.store.util.CommonUtil.humanReadableByteValue
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.tonyodev.fetch2.Status
 import java.lang.reflect.Modifier
 import java.util.Locale
 
@@ -45,6 +48,10 @@ import java.util.Locale
 class DownloadView : RelativeLayout {
 
     private lateinit var B: ViewDownloadBinding
+
+    private val gson: Gson = GsonBuilder()
+        .excludeFieldsWithModifiers(Modifier.STATIC, Modifier.TRANSIENT)
+        .create()
 
     constructor(context: Context?) : super(context) {
         init(context)
@@ -68,12 +75,18 @@ class DownloadView : RelativeLayout {
     }
 
     @ModelProp
-    fun download(download: Download) {
-        B.imgDownload.load(download.iconURL) {
-            placeholder(R.drawable.bg_placeholder)
-            transformations(RoundedCornersTransformation(32F))
+    fun download(downloadFile: DownloadFile) {
+        val download = downloadFile.download
+        val extras = download.extras.getString(Constants.STRING_EXTRA, "{}")
+        val app = gson.fromJson(extras, App::class.java)
+
+        app?.let {
+            B.imgDownload.load(app.iconArtwork.url) {
+                placeholder(R.drawable.bg_placeholder)
+                transformations(RoundedCornersTransformation(32F))
+            }
+            B.txtTitle.text = app.displayName
         }
-        B.txtTitle.text = download.displayName
 
         B.txtStatus.text = download.status.name
             .lowercase(Locale.getDefault())
@@ -85,24 +98,33 @@ class DownloadView : RelativeLayout {
                 }
             }
 
-        B.progressDownload.apply {
-            progress = download.progress
-            isIndeterminate = download.progress <= 0 && !download.isFinished
-        }
-        B.txtProgress.text = ("${download.progress}%")
+        B.txtSize.text = StringBuilder()
+            .append(humanReadableByteValue(download.downloaded, true))
+            .append("/")
+            .append(humanReadableByteValue(download.total, true))
 
-        B.txtEta.text = getETAString(context, download.timeRemaining)
+        val file = download.file
+        B.txtFile.text = file.substring(file.lastIndexOf("/") + 1)
+
+        var progress = download.progress
+        if (progress == -1) {
+            progress = 0
+        }
+
+        B.progressDownload.progress = progress
+        B.txtProgress.text = ("$progress%")
+
+        B.txtEta.text = getETAString(context, download.etaInMilliSeconds)
         B.txtSpeed.text = getDownloadSpeedString(
             context,
-            download.speed
+            download.downloadedBytesPerSecond
         )
 
         when (download.status) {
-            DownloadStatus.DOWNLOADING, DownloadStatus.QUEUED -> {
+            Status.DOWNLOADING, Status.QUEUED, Status.ADDED -> {
                 B.txtSpeed.visibility = VISIBLE
                 B.txtEta.visibility = VISIBLE
             }
-
             else -> {
                 B.txtSpeed.visibility = INVISIBLE
                 B.txtEta.visibility = INVISIBLE

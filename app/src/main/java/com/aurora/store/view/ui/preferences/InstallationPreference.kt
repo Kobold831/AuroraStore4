@@ -19,67 +19,23 @@
 
 package com.aurora.store.view.ui.preferences
 
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.widget.Toolbar
 import androidx.navigation.fragment.findNavController
-import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.aurora.extensions.runOnUiThread
-import com.aurora.extensions.showDialog
 import com.aurora.extensions.toast
 import com.aurora.store.R
 import com.aurora.store.util.CommonUtil
-import com.aurora.store.util.Log
 import com.aurora.store.util.Preferences
-import com.aurora.store.util.save
 import com.aurora.store.view.custom.preference.AuroraListPreference
-import com.aurora.store.view.custom.preference.ListPreferenceMaterialDialogFragmentCompat
-import com.aurora.store.view.custom.preference.ListPreferenceMaterialDialogFragmentCompat.Companion.PREFERENCE_DIALOG_FRAGMENT_TAG
-import com.topjohnwu.superuser.Shell
-import dagger.hilt.android.AndroidEntryPoint
-import rikka.shizuku.Shizuku
-import rikka.sui.Sui
 
-@AndroidEntryPoint
 class InstallationPreference : PreferenceFragmentCompat() {
-
-    private var shizukuAlive = Sui.isSui()
-    private val shizukuAliveListener = Shizuku.OnBinderReceivedListener {
-        Log.d("ShizukuInstaller Alive!")
-        shizukuAlive = true
-    }
-    private val shizukuDeadListener = Shizuku.OnBinderDeadListener {
-        Log.d("ShizukuInstaller Dead!")
-        shizukuAlive = false
-    }
-    private val shizukuResultListener =
-        Shizuku.OnRequestPermissionResultListener { _: Int, result: Int ->
-            if (result == PackageManager.PERMISSION_GRANTED) {
-                save(Preferences.PREFERENCE_INSTALLER_ID, 5)
-                activity?.recreate()
-            } else {
-                showDialog(
-                    R.string.action_installations,
-                    R.string.installer_shizuku_unavailable
-                )
-            }
-        }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences_installation, rootKey)
-    }
-
-    override fun onDisplayPreferenceDialog(preference: Preference) {
-        if (preference is ListPreference) {
-            val dialogFragment = ListPreferenceMaterialDialogFragmentCompat.newInstance(preference.getKey())
-            dialogFragment.setTargetFragment(this, 0)
-            dialogFragment.show(parentFragmentManager, PREFERENCE_DIALOG_FRAGMENT_TAG)
-        } else {
-            super.onDisplayPreferenceDialog(preference)
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -111,54 +67,16 @@ class InstallationPreference : PreferenceFragmentCompat() {
             it.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { _, newValue ->
                     val selectedId = Integer.parseInt(newValue as String)
-                    if (selectedId == 1) {
-                        showDialog(
-                            R.string.action_installations,
-                            R.string.dialog_cpad_error_not_work_mode
-                        )
-                        false
-                    } else if (selectedId == 2) {
-                        if (checkRootAvailability()) {
-                            save(Preferences.PREFERENCE_INSTALLER_ID, selectedId)
-                            true
-                        } else {
-                            showDialog(
-                                R.string.action_installations,
-                                R.string.installer_root_unavailable
-                            )
+                    when (selectedId) {
+                        0 -> {
                             false
                         }
-                    } else if (selectedId == 3) {
-                        showDialog(
-                            R.string.action_installations,
-                            R.string.installer_service_unavailable
-                        )
-                        false
-                    } else if (selectedId == 4) {
-                        showDialog(
-                            R.string.action_installations,
-                            R.string.installer_am_unavailable
-                        )
-                        false
-                    } else if (selectedId == 5) {
-                        showDialog(
-                            R.string.action_installations,
-                            R.string.installer_shizuku_unavailable
-                        )
-                        false
-                    } else {
-                        save(Preferences.PREFERENCE_INSTALLER_ID, selectedId)
-                        true
+
+                        else -> {
+                            false
+                        }
                     }
                 }
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
-    private fun checkRootAvailability(): Boolean {
-        return Shell.getShell().isRoot
     }
 }

@@ -40,7 +40,7 @@ class SearchSuggestionViewModel(application: Application) : AndroidViewModel(app
 
     private val webSearchHelper: WebSearchHelper = WebSearchHelper(authData)
     private val searchHelper: SearchHelper = SearchHelper(authData)
-        .using(HttpClient.getPreferredClient(application))
+        .using(HttpClient.getPreferredClient())
 
     val liveSearchSuggestions: MutableLiveData<List<SearchSuggestEntry>> = MutableLiveData()
 

@@ -29,9 +29,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.aurora.extensions.isQAndAbove
 import com.aurora.store.databinding.SheetNetworkBinding
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 class NetworkDialogSheet : BaseBottomSheet() {
 
     private val TAG = NetworkDialogSheet::class.java.simpleName

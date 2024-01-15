@@ -23,92 +23,17 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.widget.Toolbar
 import androidx.navigation.fragment.findNavController
-import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import com.aurora.Constants
-import com.aurora.extensions.runAsync
 import com.aurora.extensions.runOnUiThread
 import com.aurora.extensions.toast
 import com.aurora.store.R
-import com.aurora.store.data.network.HttpClient
-import com.aurora.store.util.CommonUtil
 import com.aurora.store.util.Preferences
-import com.aurora.store.util.save
-import com.aurora.store.view.custom.preference.ListPreferenceMaterialDialogFragmentCompat
-import com.aurora.store.view.custom.preference.ListPreferenceMaterialDialogFragmentCompat.Companion.PREFERENCE_DIALOG_FRAGMENT_TAG
-import com.google.gson.Gson
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
-@AndroidEntryPoint
 class NetworkPreference : PreferenceFragmentCompat() {
-
-    @Inject
-    lateinit var gson: Gson
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences_network, rootKey)
-
-        val proxyUrl = Preferences.getString(requireContext(), Preferences.PREFERENCE_PROXY_URL, "")
-        val proxyInfo =
-            Preferences.getString(requireContext(), Preferences.PREFERENCE_PROXY_INFO, "{}")
-
-        val preferenceProxyUrl: Preference? = findPreference(Preferences.PREFERENCE_PROXY_URL)
-        preferenceProxyUrl?.summary = proxyUrl
-
-        preferenceProxyUrl?.let {
-            it.onPreferenceChangeListener =
-                Preference.OnPreferenceChangeListener { preference, newValue ->
-                    val newProxyUrl = newValue.toString()
-                    val newProxyInfo = CommonUtil.parseProxyUrl(newProxyUrl)
-
-                    if (newProxyInfo == null) {
-                        runOnUiThread {
-                            requireContext().toast(getString(R.string.toast_proxy_invalid))
-                        }
-                        false
-                    } else {
-                        runAsync {
-                            kotlin.runCatching {
-                                val result = HttpClient
-                                    .getPreferredClient(requireContext())
-                                    .setProxy(newProxyInfo)
-                                    .get(
-                                        Constants.ANDROID_CONNECTIVITY_URL,
-                                        mapOf()
-                                    )
-
-                                runOnUiThread {
-                                    if (result.code == 204) {
-                                        requireContext().toast(getString(R.string.toast_proxy_success))
-                                        save(Preferences.PREFERENCE_PROXY_URL, newProxyUrl)
-                                        save(
-                                            Preferences.PREFERENCE_PROXY_INFO,
-                                            gson.toJson(newProxyInfo)
-                                        )
-
-                                        preference.summary = newProxyUrl
-                                    } else {
-                                        throw Exception("Failed to set proxy")
-                                    }
-                                }
-                            }.onFailure {
-                                runOnUiThread {
-                                    requireContext().toast(getText(R.string.toast_proxy_failed))
-                                    save(Preferences.PREFERENCE_PROXY_URL, proxyUrl)
-                                    save(
-                                        Preferences.PREFERENCE_PROXY_INFO,
-                                        proxyInfo
-                                    )
-                                }
-                            }
-                        }
-
-                        true
-                    }
-                }
-        }
 
         val insecureAnonymous: Preference? =
             findPreference(Preferences.PREFERENCE_INSECURE_ANONYMOUS)
@@ -121,26 +46,6 @@ class NetworkPreference : PreferenceFragmentCompat() {
                     }
                     false
                 }
-        }
-
-        findPreference<Preference>(Preferences.PREFERENCE_VENDING_VERSION)?.let {
-            it.setOnPreferenceChangeListener { _, newValue ->
-                save(Preferences.PREFERENCE_VENDING_VERSION, Integer.parseInt(newValue.toString()))
-                runOnUiThread {
-                    requireContext().toast(R.string.insecure_anonymous_apply)
-                }
-                true
-            }
-        }
-    }
-
-    override fun onDisplayPreferenceDialog(preference: Preference) {
-        if (preference is ListPreference) {
-            val dialogFragment = ListPreferenceMaterialDialogFragmentCompat.newInstance(preference.getKey())
-            dialogFragment.setTargetFragment(this, 0)
-            dialogFragment.show(parentFragmentManager, PREFERENCE_DIALOG_FRAGMENT_TAG)
-        } else {
-            super.onDisplayPreferenceDialog(preference)
         }
     }
 

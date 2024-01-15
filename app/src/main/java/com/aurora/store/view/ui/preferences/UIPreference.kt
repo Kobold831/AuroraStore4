@@ -33,12 +33,9 @@ import com.aurora.extensions.isTAndAbove
 import com.aurora.store.R
 import com.aurora.store.util.Preferences
 import com.aurora.store.util.save
-import com.aurora.store.view.custom.preference.ListPreferenceMaterialDialogFragmentCompat
-import com.aurora.store.view.custom.preference.ListPreferenceMaterialDialogFragmentCompat.Companion.PREFERENCE_DIALOG_FRAGMENT_TAG
-import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
 
-@AndroidEntryPoint
+
 class UIPreference : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -56,16 +53,6 @@ class UIPreference : PreferenceFragmentCompat() {
             } else {
                 isVisible = false
             }
-        }
-    }
-
-    override fun onDisplayPreferenceDialog(preference: Preference) {
-        if (preference is ListPreference) {
-            val dialogFragment = ListPreferenceMaterialDialogFragmentCompat.newInstance(preference.getKey())
-            dialogFragment.setTargetFragment(this, 0)
-            dialogFragment.show(parentFragmentManager, PREFERENCE_DIALOG_FRAGMENT_TAG)
-        } else {
-            super.onDisplayPreferenceDialog(preference)
         }
     }
 

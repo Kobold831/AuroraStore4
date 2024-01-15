@@ -37,6 +37,7 @@ class InstalledViewModel(application: Application) : BaseAppsViewModel(applicati
         EventBus.getDefault().register(this)
 
         requestState = RequestState.Init
+        observe()
     }
 
     override fun observe() {

@@ -27,8 +27,8 @@ import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PackageInfoFlags
 import android.content.pm.SharedLibraryInfo
 import android.content.res.Configuration
+import android.os.Build
 import androidx.core.content.pm.PackageInfoCompat
-import com.aurora.extensions.getInstallerPackageNameCompat
 import com.aurora.extensions.isOAndAbove
 import com.aurora.extensions.isTAndAbove
 
@@ -124,24 +124,26 @@ object PackageUtil {
         }
     }
 
+    fun getAllPackages(context: Context): List<PackageInfo> {
+        val packageInfoSet: MutableList<PackageInfo> = mutableListOf()
+        val packageManager: PackageManager = context.packageManager
+        val flags: Int = getAllFlags()
+        val packageInfoList: List<PackageInfo> = packageManager.getInstalledPackages(flags)
+        for (packageInfo in packageInfoList) {
+            if (packageInfo.packageName != null && packageInfo.applicationInfo != null) {
+                packageInfoSet.add(packageInfo)
+            }
+        }
+        return packageInfoSet
+    }
+
     fun getPackageInfoMap(context: Context): MutableMap<String, PackageInfo> {
         val packageInfoSet: MutableMap<String, PackageInfo> = mutableMapOf()
         val packageManager: PackageManager = context.packageManager
         val flags: Int = PackageManager.GET_META_DATA
         var packageInfoList: List<PackageInfo> = packageManager.getInstalledPackages(flags)
 
-        val isGoogleFilterEnabled = Preferences.getBoolean(
-            context,
-            Preferences.PREFERENCE_FILTER_GOOGLE
-        )
-
-        val isAuroraOnlyUpdateEnabled = Preferences.getBoolean(
-            context,
-            Preferences.PREFERENCE_FILTER_AURORA_ONLY,
-            false
-        )
-
-        val isFDroidFilterEnabled = Preferences.getBoolean(
+        val isFdroidFilterEnabled = Preferences.getBoolean(
             context,
             Preferences.PREFERENCE_FILTER_FDROID
         )
@@ -155,49 +157,15 @@ object PackageUtil {
             it.packageName != null && it.applicationInfo != null
         }
 
-        /*Filter google apps*/
-        if (isGoogleFilterEnabled) {
-            packageInfoList = packageInfoList
-                .filter {
-                    !listOf(
-                        "com.chrome.beta",
-                        "com.chrome.canary",
-                        "com.chrome.dev",
-                        "com.android.chrome",
-                        "com.niksoftware.snapseed",
-                        "com.google.toontastic",
-                    ).contains(it.packageName)
-                }.filter {
-                    it.packageName?.contains("com.google") == false
-                }
-        }
-
-        /*Select only Aurora STore installed apps*/
-        if (isAuroraOnlyUpdateEnabled) {
-            packageInfoList = packageInfoList
-                .filter {
-                    val packageInstaller = packageManager.getInstallerPackageNameCompat(it.packageName)
-                    listOf(
-                        "com.aurora.store",
-                        "com.aurora.store.nightly",
-                        "com.aurora.services"
-                    ).contains(packageInstaller)
-                }
-        }
-
         if (!isExtendedUpdateEnabled) {
             packageInfoList = packageInfoList.filter { it.applicationInfo.enabled }
         }
 
-        /*Filter F-Droid apps*/
-        if (isFDroidFilterEnabled) {
+        if (isFdroidFilterEnabled) {
             packageInfoList = packageInfoList
                 .filter {
-                    val packageInstaller = packageManager.getInstallerPackageNameCompat(it.packageName)
-                    !listOf(
-                        "org.fdroid.fdroid",
-                        "org.fdroid.fdroid.privileged"
-                    ).contains(packageInstaller)
+                    val packageInstaller = packageManager.getInstallerPackageName(it.packageName)
+                    packageInstaller != "org.fdroid.fdroid.privileged"
                 }.filter {
                     !CertUtil.isFDroidApp(context, it.packageName)
                 }
@@ -218,5 +186,17 @@ object PackageUtil {
         filter.addAction(Intent.ACTION_PACKAGE_ADDED)
         filter.addAction(Intent.ACTION_PACKAGE_REMOVED)
         return filter
+    }
+
+    private fun getAllFlags(): Int {
+        var flags = (PackageManager.GET_META_DATA)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            flags = flags or PackageManager.GET_DISABLED_COMPONENTS
+            flags = flags or PackageManager.GET_UNINSTALLED_PACKAGES
+        } else {
+            flags = flags or PackageManager.MATCH_DISABLED_COMPONENTS
+            flags = flags or PackageManager.MATCH_UNINSTALLED_PACKAGES
+        }
+        return flags
     }
 }

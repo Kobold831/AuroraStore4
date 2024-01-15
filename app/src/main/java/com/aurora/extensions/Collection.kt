@@ -19,8 +19,6 @@
 
 package com.aurora.extensions
 
-import com.aurora.gplayapi.data.models.File
-
 fun <T> MutableList<T>.flushAndAdd(list: List<T>) {
     clear()
     addAll(list)
@@ -29,8 +27,4 @@ fun <T> MutableList<T>.flushAndAdd(list: List<T>) {
 fun <T> MutableSet<T>.flushAndAdd(list: Set<T>) {
     clear()
     addAll(list)
-}
-
-fun List<File>.requiresObbDir(): Boolean {
-    return this.any { it.type == File.FileType.OBB || it.type == File.FileType.PATCH }
 }
