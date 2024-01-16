@@ -19,30 +19,19 @@
 
 package com.aurora.store.view.ui.onboarding
 
-import android.content.ComponentName
-import android.content.Context
-import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.IBinder
 import android.view.View
-import com.aurora.extensions.showDialog
 import com.aurora.store.R
 import com.aurora.store.data.model.Installer
 import com.aurora.store.databinding.FragmentOnboardingInstallerBinding
-import com.aurora.store.util.Common
 import com.aurora.store.util.Preferences
 import com.aurora.store.util.Preferences.PREFERENCE_INSTALLER_ID
-import com.aurora.store.util.save
 import com.aurora.store.view.epoxy.views.preference.InstallerViewModel_
 import com.aurora.store.view.ui.commons.BaseFragment
 import com.google.gson.reflect.TypeToken
-import com.saradabar.cpadcustomizetool.data.service.IDeviceOwnerService
 import java.nio.charset.StandardCharsets
 
-
 class InstallerFragment : BaseFragment(R.layout.fragment_onboarding_installer) {
-
-    var mDeviceOwnerService: IDeviceOwnerService? = null
 
     private var _binding: FragmentOnboardingInstallerBinding? = null
     private val binding get() = _binding!!
@@ -82,25 +71,11 @@ class InstallerFragment : BaseFragment(R.layout.fragment_onboarding_installer) {
         when (installerId) {
             /* セッションインストーラー（デバイスオーナーまたはCPadCustomizeTool） */
             0 -> {
-                if (!hasDeviceOwnerService()) {
-                    if (mDeviceOwnerService!!.isDeviceOwnerApp) {
-                        this.installerId = installerId
-                        save(PREFERENCE_INSTALLER_ID, installerId)
-                    } else {
-                        showDialog(
-                            R.string.action_installations,
-                            R.string.dialog_cpad_installer_error_failure_bind
-                        )
-                    }
-                } else {
-                    showDialog(
-                        R.string.action_installations,
-                        R.string.dialog_cpad_installer_error_failure_bind
-                    )
-                }
+                //セーブさせない
             }
             /* Dhizukuインストーラー */
             1 -> {
+                //セーブさせない
             }
         }
     }
@@ -116,26 +91,5 @@ class InstallerFragment : BaseFragment(R.layout.fragment_onboarding_installer) {
             json,
             object : TypeToken<MutableList<Installer?>?>() {}.type
         )
-    }
-
-    private var mDeviceOwnerServiceConnection: ServiceConnection = object : ServiceConnection {
-        override fun onServiceConnected(componentName: ComponentName, iBinder: IBinder) {
-            mDeviceOwnerService = IDeviceOwnerService.Stub.asInterface(iBinder)
-        }
-
-        override fun onServiceDisconnected(componentName: ComponentName) {
-        }
-    }
-
-    private fun hasDeviceOwnerService(): Boolean {
-        return try {
-            requireContext().bindService(
-                Common.CUSTOMIZE_TOOL_SERVICE,
-                mDeviceOwnerServiceConnection,
-                Context.BIND_AUTO_CREATE
-            )
-        } catch (ignored: Exception) {
-            false
-        }
     }
 }

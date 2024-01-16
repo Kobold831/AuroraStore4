@@ -73,7 +73,6 @@
     <string name="action_ignore">"Ignore"</string>
     <string name="action_ignore_version">Ignore version</string>
     <string name="action_install">"Install"</string>
-    <string name="action_installations">"Installations"</string>
     <string name="action_installing">"Installing"</string>
     <string name="action_join">"Join"</string>
     <string name="action_leave">"Leave"</string>
@@ -386,7 +385,6 @@
     <string name="dialog_cpad_disagree">同意しない / disagree</string>
     <string name="dialog_cpad_notice_start">このアプリケーションを使用するために\"同意する\"を押すと、<a href="">N/A</a>の使用許諾契約に同意したことになります。\nこのアプリケーションを通じて生じた損害や損失について、開発者は一切の責任を負いませんのでご了承ください。\nWhen you press \"Agree\" to use this application, you agree to <a href="">N/A</a> license agreement.\nPlease note that developer do not take any responsibility or liability for any damage or loss caused through this application.</string>
     <string name="dialog_cpad_update_caution">遷移先のページより新しいバージョンのapkファイルをダウンロードしてadbでインストールしてください</string>
-    <string name="dialog_cpad_installer_error_failure_bind">AuroraStoreまたはCPad Customize Toolがデバイスオーナーではありません\nCPadCustomizeToolがインストールされていません</string>
 
     <!-- トースト -->
     <string name="toast_cpad_unknown_activity">ブラウザを開けませんでした</string>

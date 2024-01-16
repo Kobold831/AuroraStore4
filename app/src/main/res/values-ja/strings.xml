@@ -123,7 +123,6 @@
     <string name="action_leave">退出する</string>
     <string name="action_join">参加する</string>
     <string name="action_installing">インストール中</string>
-    <string name="action_installations">インストール</string>
     <string name="action_install">インストール</string>
     <string name="action_ignore_version">このバージョンを無視</string>
     <string name="action_ignore">無視</string>

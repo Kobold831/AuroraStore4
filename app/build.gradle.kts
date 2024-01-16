@@ -106,6 +106,9 @@ dependencies {
     //CPad
     implementation(fileTree(mapOf("dir" to "libs", "include" to arrayOf("*.jar"))))
 
+    //Dhizuku
+    implementation("io.github.iamr0s:Dhizuku-API:2.4")
+
     //Protobuf
     implementation("com.google.protobuf:protobuf-javalite:3.25.1")
 

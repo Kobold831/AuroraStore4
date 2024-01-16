@@ -19,6 +19,8 @@
 
 package com.aurora.store.view.ui.launch;
 
+import static com.aurora.store.util.Preferences.PREFERENCE_INSTALLER_ID;
+
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.admin.DevicePolicyManager;
@@ -28,6 +30,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -45,6 +48,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.aurora.Constants;
+import com.aurora.extensions.ContextKt;
 import com.aurora.extensions.ToastKt;
 import com.aurora.store.BuildConfig;
 import com.aurora.store.MainActivity;
@@ -54,8 +58,12 @@ import com.aurora.store.data.connection.Updater;
 import com.aurora.store.data.event.DownloadEventListener;
 import com.aurora.store.data.handler.ProgressHandler;
 import com.aurora.store.util.Common;
+import com.aurora.store.util.Preferences;
+import com.aurora.store.util.PreferencesKt;
 import com.aurora.store.util.Variables;
 import com.aurora.store.view.epoxy.views.UpdateModeView;
+import com.rosan.dhizuku.api.Dhizuku;
+import com.rosan.dhizuku.api.DhizukuRequestPermissionListener;
 import com.saradabar.cpadcustomizetool.data.service.IDeviceOwnerService;
 
 import org.json.JSONException;
@@ -265,7 +273,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
 
     /* デバイスオーナーインストーラー設定 */
     public void XInstaller() {
-        /* Preferences.putInteger(context, PREFERENCE_INSTALLER_ID)保存実装 */
+        PreferencesKt.save(getApplicationContext(), PREFERENCE_INSTALLER_ID, 0);
 
         if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
             WarningDialog();
@@ -277,7 +285,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
 
     /* DeviceOwnerServiceインストーラー（CPadCustomizeTool）設定 */
     public void OInstaller() {
-        /* Preferences.putInteger(context, PREFERENCE_INSTALLER_ID)保存実装 */
+        PreferencesKt.save(getApplicationContext(), PREFERENCE_INSTALLER_ID, 0);
 
         if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
             WarningDialog();
@@ -291,24 +299,53 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
     public void DInstaller() {
         /* バインド失敗した場合はDhizuku通信試行 */
         /* Dhizuku通信と権限許可プロンプト処理実装予定 */
-        //if()
+        if (!Dhizuku.init(this)) {
+            /* Dhizukuが失敗した場合はエラー */
+            new AlertDialog.Builder(this)
+                    .setCancelable(false)
+                    .setTitle(R.string.dialog_cpad_title_start_error)
+                    .setMessage(R.string.dialog_cpad_error_installer)
+                    .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> finishAndRemoveTask())
+                    .show();
+            return;
+        }
 
-        /* Preferences.putInteger(context, PREFERENCE_INSTALLER_ID)保存実装 */
+        if (!Dhizuku.isPermissionGranted()) {
+            Dhizuku.requestPermission(new DhizukuRequestPermissionListener() {
+                @Override
+                public void onRequestPermission(int grantResult) {
+                    runOnUiThread(() -> {
+                        if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                            PreferencesKt.save(getApplicationContext(), PREFERENCE_INSTALLER_ID, 1);
 
-//        if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
-//            WarningDialog();
-//        } else {
-//            startActivity(new Intent(this, MainActivity.class));
-//            finish();
-//        }
+                            if (Common.GET_SETTINGS_FLAG(getApplicationContext()) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
+                                WarningDialog();
+                            } else {
+                                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                                finish();
+                            }
+                        } else {
+                            /* Dhizukuが失敗した場合はエラー */
+                            new AlertDialog.Builder(StartActivity.this)
+                                    .setCancelable(false)
+                                    .setTitle(R.string.dialog_cpad_title_start_error)
+                                    .setMessage(R.string.dialog_cpad_error_installer)
+                                    .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> finishAndRemoveTask())
+                                    .show();
+                        }
+                    });
+                }
+            });
+        } else {
+            PreferencesKt.save(getApplicationContext(), PREFERENCE_INSTALLER_ID, 1);
 
-        /* Dhizukuが失敗した場合はエラー */
-        new AlertDialog.Builder(this)
-                .setCancelable(false)
-                .setTitle(R.string.dialog_cpad_title_start_error)
-                .setMessage(R.string.dialog_cpad_error_installer)
-                .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> finishAndRemoveTask())
-                .show();
+            if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
+                WarningDialog();
+            } else {
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+            }
+        }
     }
 
     ServiceConnection mDeviceOwnerServiceConnection = new ServiceConnection() {

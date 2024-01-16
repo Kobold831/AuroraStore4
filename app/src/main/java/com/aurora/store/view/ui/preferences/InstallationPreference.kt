@@ -70,10 +70,12 @@ class InstallationPreference : PreferenceFragmentCompat() {
                     when (selectedId) {
                         /* セッションインストーラー（デバイスオーナーまたはCPadCustomizeTool） */
                         0 -> {
+                            //選択させない
                             false
                         }
                         /* Dhizukuインストーラー */
                         else -> {
+                            //選択させない
                             false
                         }
                     }
