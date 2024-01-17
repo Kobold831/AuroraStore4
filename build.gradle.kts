@@ -26,4 +26,5 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.10-1.0.13" apply false
     id("androidx.navigation.safeargs.kotlin") version "2.6.0" apply false
     id("org.jlleitschuh.gradle.ktlint") version "11.6.0" apply false
+    id("dev.rikka.tools.refine") version "4.3.0" apply false
 }

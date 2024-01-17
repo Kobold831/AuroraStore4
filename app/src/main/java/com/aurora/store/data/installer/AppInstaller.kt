@@ -64,7 +64,7 @@ open class AppInstaller private constructor(var context: Context) {
 
         return when (prefValue) {
             /* セッションインストーラー（デバイスオーナーまたはCPadCustomizeTool） */
-            1 -> {
+            0 -> {
                 val installer = SessionInstaller(context)
                 choiceAndInstaller[prefValue] = installer
                 installer

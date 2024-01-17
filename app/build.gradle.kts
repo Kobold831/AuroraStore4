@@ -28,6 +28,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("androidx.navigation.safeargs.kotlin")
     id("org.jlleitschuh.gradle.ktlint")
+    id("dev.rikka.tools.refine")
 }
 
 kotlin {
@@ -65,8 +66,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -163,6 +164,10 @@ dependencies {
 
     //Browser
     implementation("androidx.browser:browser:1.7.0")
+
+    //Shizuku
+    compileOnly("dev.rikka.hidden:stub:4.3.2")
+    implementation("dev.rikka.tools.refine:runtime:4.4.0")
 
     implementation("org.lsposed.hiddenapibypass:hiddenapibypass:4.3")
 

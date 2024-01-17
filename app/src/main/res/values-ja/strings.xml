@@ -325,4 +325,5 @@
     <string name="verifying_new_session">新しいセッションを検証中</string>
     <string name="action_enabled">有効</string>
     <string name="app_language">アプリの言語</string>
+    <string name="installer_dhizuku_unavailable">Dhizuku がインストールされていないか、正常に動作していません。</string>
 </resources>

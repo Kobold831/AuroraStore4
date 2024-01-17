@@ -355,6 +355,7 @@
     <string name="android_market_desc">Android Market was an online store offering software applications designed for Android devices, retired in 2017.</string>
     <string name="app_link_amazon_appstore" translatable="false">www.amazon.com</string>
     <string name="amazon_appstore_desc">Amazon Appstore is an app store for Android-compatible platforms operated by Amazon.</string>
+    <string name="installer_dhizuku_unavailable">Dhizuku がインストールされていないか、正常に動作していません。</string>
 
     <!-- プレファレンス -->
     <string name="pref_cpad_other_title">その他の設定</string>
