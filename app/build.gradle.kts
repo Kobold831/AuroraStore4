@@ -49,32 +49,14 @@ android {
         versionName = "1.4.0"
     }
 
-    signingConfigs {
-        if (File("signing.properties").exists()) {
-            create("release") {
-                val properties = Properties().apply {
-                    File("signing.properties").inputStream().use { load(it) }
-                }
-
-                keyAlias = properties["KEY_ALIAS"] as String
-                keyPassword = properties["KEY_PASSWORD"] as String
-                storeFile = file(properties["STORE_FILE"] as String)
-                storePassword = properties["KEY_PASSWORD"] as String
-            }
-        }
-    }
-
     buildTypes {
         release {
-            isMinifyEnabled = false
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            if (File("signing.properties").exists()) {
-                signingConfig = signingConfigs.getByName("release")
-            }
         }
     }
 
@@ -166,8 +148,11 @@ dependencies {
     implementation("androidx.browser:browser:1.7.0")
 
     //Shizuku
+    val shizuku_version = "13.1.5"
     compileOnly("dev.rikka.hidden:stub:4.3.2")
     implementation("dev.rikka.tools.refine:runtime:4.4.0")
+    implementation("dev.rikka.shizuku:api:${shizuku_version}")
+    implementation("dev.rikka.shizuku:provider:${shizuku_version}")
 
     implementation("org.lsposed.hiddenapibypass:hiddenapibypass:4.3")
 
@@ -178,7 +163,4 @@ dependencies {
 
     //WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")
-
-    // LeakCanary
-    debugImplementation("com.squareup.leakcanary:leakcanary-android:2.12")
 }

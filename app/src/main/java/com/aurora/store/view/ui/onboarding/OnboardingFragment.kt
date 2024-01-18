@@ -173,7 +173,6 @@ class OnboardingFragment : Fragment(R.layout.fragment_onboarding) {
 
         /*Installer*/
         save(PREFERENCE_AUTO_DELETE, true)
-        save(PREFERENCE_INSTALLER_ID, 0)
 
         /*Updates*/
         save(PREFERENCE_UPDATES_EXTENDED, false)

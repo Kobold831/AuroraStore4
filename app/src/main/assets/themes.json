@@ -1,32 +1,32 @@
 [
   {
     "id": "0",
-    "title": "System",
-    "subtitle": "Follow system themes."
+    "title": "システムテーマ",
+    "subtitle": "システム設定に準拠"
   },
   {
     "id": "1",
-    "title": "Light",
-    "subtitle": "Bright, suitable for daylight conditions"
+    "title": "ライト",
+    "subtitle": "明るく、日中に最適なテーマ"
   },
   {
     "id": "2",
-    "title": "Dark",
-    "subtitle": "Relatively dark theme, best for night owls"
+    "title": "ダーク",
+    "subtitle": "比較的暗く、夜間に最適なテーマ"
   },
   {
     "id": "3",
-    "title": "Pitch Black",
-    "subtitle": "Black theme, best for AMOLED Displays"
+    "title": "ブラック",
+    "subtitle": "有機ELディスプレイに最適なブラックテーマ"
   },
   {
     "id": "4",
-    "title": "Dark-X",
-    "subtitle": "Variant of dark theme"
+    "title": "ダークX",
+    "subtitle": "ダークとは異なるテーマ"
   },
   {
     "id": "5",
-    "title": "Darkord",
-    "subtitle": "Kanged from discord"
+    "title": "ディスコード",
+    "subtitle": "ディスコードのテーマ"
   }
 ]

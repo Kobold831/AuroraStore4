@@ -952,7 +952,7 @@ class AppDetailsFragment : BaseFragment(R.layout.fragment_details) {
 
         B.txtSize.text = CommonUtil.addSiPrefix(app.size)
         B.txtRating.text = app.labeledRating
-        B.txtSdk.text = ("Target SDK ${app.targetSdk}")
+        B.txtSdk.text = ("対象APIレベル ${app.targetSdk}")
         B.txtUpdated.text = app.updatedOn
         B.txtDescription.text = HtmlCompat.fromHtml(
             app.shortDescription,
@@ -1176,7 +1176,7 @@ class AppDetailsFragment : BaseFragment(R.layout.fragment_details) {
                 )
             }
         }
-        B.txtPermissionCount.text = ("${app.permissions.size} permissions")
+        B.txtPermissionCount.text = ("${app.permissions.size} の権限")
     }
 
     private fun updateBetaActions(B: LayoutDetailsBetaBinding, isSubscribed: Boolean) {

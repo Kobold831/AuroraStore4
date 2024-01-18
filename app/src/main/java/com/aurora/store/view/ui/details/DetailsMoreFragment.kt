@@ -108,7 +108,7 @@ class DetailsMoreFragment : BaseFragment(R.layout.fragment_details_more) {
                 add(
                     HeaderViewModel_()
                         .id("badge_header")
-                        .title("Files")
+                        .title("ファイル")
                 )
 
                 app.fileList.forEach {
@@ -125,7 +125,7 @@ class DetailsMoreFragment : BaseFragment(R.layout.fragment_details_more) {
                 add(
                     HeaderViewModel_()
                         .id("badge_header")
-                        .title("More")
+                        .title("詳細")
                 )
 
                 app.infoBadges.forEach {
@@ -153,7 +153,7 @@ class DetailsMoreFragment : BaseFragment(R.layout.fragment_details_more) {
                 add(
                     HeaderViewModel_()
                         .id("info_header")
-                        .title("Info")
+                        .title("情報")
                 )
                 app.appInfo.appInfoMap.forEach {
                     add(

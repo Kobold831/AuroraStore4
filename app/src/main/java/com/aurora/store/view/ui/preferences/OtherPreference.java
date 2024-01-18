@@ -26,7 +26,10 @@ import android.content.Context;
 import android.content.ServiceConnection;
 import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.RemoteException;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.ListView;
@@ -123,8 +126,25 @@ public class OtherPreference extends PreferenceFragmentCompat {
                     }
                     case 2 -> {
                         if (tryBindDeviceOwnerService()) {
-                            Common.SET_UPDATE_MODE(requireActivity(), 2);
-                            listView.invalidateViews();
+                            Runnable runnable = () -> {
+                                try {
+                                    if (mDeviceOwnerService.isDeviceOwnerApp()) {
+                                        Common.SET_UPDATE_MODE(requireActivity(), 2);
+                                        listView.invalidateViews();
+                                    } else {
+                                        new AlertDialog.Builder(requireActivity())
+                                                .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
+                                                .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
+                                                .show();
+                                    }
+                                } catch (RemoteException ignored) {
+                                    new AlertDialog.Builder(requireActivity())
+                                            .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
+                                            .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
+                                            .show();
+                                }
+                            };
+                            new Handler(Looper.getMainLooper()).postDelayed(runnable, 1000);
                         } else {
                             new AlertDialog.Builder(requireActivity())
                                     .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))

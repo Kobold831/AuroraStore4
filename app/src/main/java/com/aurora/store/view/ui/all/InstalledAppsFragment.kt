@@ -86,7 +86,7 @@ class InstalledAppsFragment : BaseFragment() {
                 add(
                     HeaderViewModel_()
                         .id("header")
-                        .title("${appList.size} apps installed")
+                        .title("${appList.size} 個のインストール済みアプリ")
                 )
                 appList.forEach { app ->
                     add(

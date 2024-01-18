@@ -70,8 +70,13 @@ open class AppInstaller private constructor(var context: Context) {
                 installer
             }
             /* Dhizukuインストーラー */
-            else -> {
+            1 -> {
                 val installer = DhizukuInstaller(context)
+                choiceAndInstaller[prefValue] = installer
+                installer
+            }
+            else -> {
+                val installer = ShizukuInstaller(context)
                 choiceAndInstaller[prefValue] = installer
                 installer
             }
