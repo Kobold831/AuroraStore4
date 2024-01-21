@@ -139,7 +139,7 @@ public class Updater {
     private void oInstall() {
         Runnable runnable = () -> {
             try {
-                if (!mDeviceOwnerService.installPackages("", Collections.singletonList(Uri.parse(Uri.fromFile(new File(activity.getExternalCacheDir(), "update.apk")).getPath())))) {
+                if (!mDeviceOwnerService.tryInstallPackages("", Collections.singletonList(Uri.parse(Uri.fromFile(new File(activity.getExternalCacheDir(), "update.apk")).getPath())))) {
                     new AlertDialog.Builder(activity)
                             .setCancelable(false)
                             .setMessage(R.string.dialog_cpad_error)

@@ -135,7 +135,7 @@ abstract class SessionInstallerBase(context: Context) : InstallerBase(context) {
     private fun oInstall(packageName: String, uriList: List<Uri>) {
         try {
             val runnable = Runnable {
-                if (!mDeviceOwnerService?.installPackages(packageName, uriList)!!) {
+                if (!mDeviceOwnerService?.tryInstallPackages(packageName, uriList)!!) {
                     removeFromInstallQueue(packageName)
                     postError(
                         packageName,
