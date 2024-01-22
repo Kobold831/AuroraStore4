@@ -21,17 +21,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
-public class UserService extends IUserService.Stub {
+public class DhizukuService extends IDhizukuService.Stub {
 
     private Context context;
 
     @Keep
-    public UserService(Context context) {
+    public DhizukuService(Context context) {
         this.context = context;
     }
 
     @Override
-    public boolean isInstallPackages(String str, List<Uri> uriList) throws RemoteException {
+    public boolean tryInstallPackages(String str, List<Uri> uriList) throws RemoteException {
         int sessionId;
 
         try {

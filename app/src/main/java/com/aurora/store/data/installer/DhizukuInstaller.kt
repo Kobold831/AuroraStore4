@@ -7,8 +7,8 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import com.aurora.store.R
-import com.aurora.store.data.service.IUserService
-import com.aurora.store.data.service.UserService
+import com.aurora.store.data.service.DhizukuService
+import com.aurora.store.data.service.IDhizukuService
 import com.rosan.dhizuku.api.Dhizuku
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
 import com.rosan.dhizuku.api.DhizukuUserServiceArgs
@@ -16,7 +16,7 @@ import java.io.File
 
 class DhizukuInstaller(context: Context) : SessionInstallerBase(context) {
 
-    private var service: IUserService? = null
+    private var service: IDhizukuService? = null
 
     override fun install(packageName: String, files: List<Any>) {
         if (!Dhizuku.init(context)) {
@@ -41,7 +41,7 @@ class DhizukuInstaller(context: Context) : SessionInstallerBase(context) {
 
         try {
             val runnable = Runnable {
-                if (!service?.isInstallPackages(packageName, uriList)!!) {
+                if (!service?.tryInstallPackages(packageName, uriList)!!) {
                     removeFromInstallQueue(packageName)
                     postError(
                         packageName,
@@ -62,10 +62,10 @@ class DhizukuInstaller(context: Context) : SessionInstallerBase(context) {
     }
 
     fun bindUserService() {
-        val args = DhizukuUserServiceArgs(ComponentName(context, UserService::class.java))
+        val args = DhizukuUserServiceArgs(ComponentName(context, DhizukuService::class.java))
         val bind = Dhizuku.bindUserService(args, object : ServiceConnection {
             override fun onServiceConnected(name: ComponentName, iBinder: IBinder) {
-                service = IUserService.Stub.asInterface(iBinder)
+                service = IDhizukuService.Stub.asInterface(iBinder)
             }
 
             override fun onServiceDisconnected(name: ComponentName) {

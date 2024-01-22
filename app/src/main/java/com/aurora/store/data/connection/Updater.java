@@ -39,7 +39,11 @@ import com.aurora.Constants;
 import com.aurora.extensions.ToastKt;
 import com.aurora.store.R;
 import com.aurora.store.data.installer.InstallerService;
+import com.aurora.store.data.service.DhizukuService;
+import com.aurora.store.data.service.IDhizukuService;
 import com.aurora.store.util.Common;
+import com.rosan.dhizuku.api.Dhizuku;
+import com.rosan.dhizuku.api.DhizukuUserServiceArgs;
 import com.saradabar.cpadcustomizetool.data.service.IDeviceOwnerService;
 
 import java.io.File;
@@ -52,6 +56,7 @@ import java.util.Collections;
 public class Updater {
 
     IDeviceOwnerService mDeviceOwnerService;
+    IDhizukuService mDhizukuService;
     Activity activity;
 
     public Updater(Activity act) {
@@ -104,6 +109,17 @@ public class Updater {
                             .show();
                 }
             }
+            case 3 -> {
+                if (tryBindDhizukuService(activity)) {
+                    dInstall();
+                } else {
+                    new AlertDialog.Builder(activity)
+                            .setCancelable(false)
+                            .setMessage(R.string.dialog_cpad_error)
+                            .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
+                            .show();
+                }
+            }
         }
     }
 
@@ -124,6 +140,20 @@ public class Updater {
         } catch (Exception ignored) {
             return false;
         }
+    }
+
+    public boolean tryBindDhizukuService(Context context) {
+        DhizukuUserServiceArgs args = new DhizukuUserServiceArgs(new ComponentName(context, DhizukuService.class));
+        return Dhizuku.bindUserService(args, new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder iBinder) {
+                mDhizukuService = IDhizukuService.Stub.asInterface(iBinder);
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+            }
+        });
     }
 
     private void xInstall() throws IOException {
@@ -155,6 +185,27 @@ public class Updater {
             }
         };
         new Handler().postDelayed(runnable, 1000);
+    }
+
+    private void dInstall() {
+        Runnable runnable = () -> {
+            try {
+                if (!mDhizukuService.tryInstallPackages("", Collections.singletonList(Uri.parse(Uri.fromFile(new File(activity.getExternalCacheDir(), "update.apk")).getPath())))) {
+                    new AlertDialog.Builder(activity)
+                            .setCancelable(false)
+                            .setMessage(R.string.dialog_cpad_error)
+                            .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
+                            .show();
+                }
+            } catch (RemoteException ignored) {
+                new AlertDialog.Builder(activity)
+                        .setCancelable(false)
+                        .setMessage(R.string.dialog_cpad_error)
+                        .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
+                        .show();
+            }
+        };
+        new Handler().postDelayed(runnable, 5000);
     }
 
     private boolean trySessionInstall() throws IOException {
