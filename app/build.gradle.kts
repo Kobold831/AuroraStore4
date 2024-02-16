@@ -19,8 +19,6 @@
  *
  */
 
-import java.util.Properties
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -45,8 +43,8 @@ android {
         //noinspection ExpiredTargetSdkVersion
         targetSdk = 22
 
-        versionCode = 10
-        versionName = "1.4.0"
+        versionCode = 11
+        versionName = "435.4.1"
     }
 
     buildTypes {
@@ -111,7 +109,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:$life_version")
 
     //Arch Navigation
-    val nav_version = "2.7.6"
+    val nav_version = "2.7.7"
     implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
     implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
 

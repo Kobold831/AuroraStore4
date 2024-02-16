@@ -25,9 +25,14 @@ import android.content.SharedPreferences;
 
 import androidx.preference.PreferenceManager;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class Common {
 
     public static Intent CUSTOMIZE_TOOL_SERVICE = new Intent("com.saradabar.cpadcustomizetool.data.service.DeviceOwnerService").setPackage("com.saradabar.cpadcustomizetool");
+
+    public static final List<String> list = Arrays.asList("ADB", "デバイスオーナー", "CPad Customize Tool", "Dhizuku", "Shizuku（追加予定）");
 
     /* データ管理 */
     public static void SET_SETTINGS_FLAG(boolean flag, Context context) {

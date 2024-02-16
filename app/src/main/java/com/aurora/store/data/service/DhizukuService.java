@@ -1,5 +1,7 @@
 package com.aurora.store.data.service;
 
+import static com.aurora.extensions.PlatformKt.isSAndAbove;
+
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -10,9 +12,6 @@ import android.os.Environment;
 import android.os.RemoteException;
 
 import androidx.annotation.Keep;
-import androidx.preference.PreferenceManager;
-
-import com.aurora.store.data.installer.InstallerService;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,7 +34,7 @@ public class DhizukuService extends IDhizukuService.Stub {
         int sessionId;
 
         try {
-            sessionId = createSession(context, context.getPackageManager().getPackageInstaller());
+            sessionId = createSession(context.getPackageManager().getPackageInstaller());
             if (sessionId < 0) {
                 context.getPackageManager().getPackageInstaller().abandonSession(sessionId);
                 return false;
@@ -56,7 +55,7 @@ public class DhizukuService extends IDhizukuService.Stub {
             }
         }
         try {
-            if (commitSession(context.getPackageManager().getPackageInstaller(), sessionId, context)) {
+            if (commitSession(context, context.getPackageManager().getPackageInstaller(), sessionId)) {
                 return true;
             } else {
                 context.getPackageManager().getPackageInstaller().abandonSession(sessionId);
@@ -68,13 +67,9 @@ public class DhizukuService extends IDhizukuService.Stub {
         }
     }
 
-    public static int createSession(Context context, PackageInstaller packageInstaller) throws IOException {
+    public static int createSession(PackageInstaller packageInstaller) throws IOException {
         PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
-
-        if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("pre_owner_install_location", false)) {
-            params.setInstallLocation(PackageInfo.INSTALL_LOCATION_PREFER_EXTERNAL);
-        } else params.setInstallLocation(PackageInfo.INSTALL_LOCATION_INTERNAL_ONLY);
-
+        params.setInstallLocation(PackageInfo.INSTALL_LOCATION_PREFER_EXTERNAL);
         return packageInstaller.createSession(params);
     }
 
@@ -113,17 +108,25 @@ public class DhizukuService extends IDhizukuService.Stub {
         }
     }
 
-    public static boolean commitSession(PackageInstaller packageInstaller, int sessionId, Context context) throws IOException {
+    public static boolean commitSession(Context context, PackageInstaller packageInstaller, int sessionId) throws IOException {
         PackageInstaller.Session session = null;
 
         try {
             session = packageInstaller.openSession(sessionId);
-            Intent intent = new Intent(context, InstallerService.class);
+            Intent intent = new Intent("com.aurora.store.data.installer.InstallerService").setPackage("com.aurora.store");
+            int flags;
+
+            if (isSAndAbove()) {
+                flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE;
+            } else {
+                flags = PendingIntent.FLAG_UPDATE_CURRENT;
+            }
+
             PendingIntent pendingIntent = PendingIntent.getService(
                     context,
                     sessionId,
                     intent,
-                    PendingIntent.FLAG_CANCEL_CURRENT
+                    flags
             );
 
             session.commit(pendingIntent.getIntentSender());

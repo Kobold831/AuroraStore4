@@ -21,7 +21,6 @@ package com.aurora.store.view.ui.launch;
 
 import static com.aurora.store.util.Preferences.PREFERENCE_INSTALLER_ID;
 
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.admin.DevicePolicyManager;
 import android.content.ActivityNotFoundException;
@@ -45,10 +44,10 @@ import android.widget.AbsListView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.aurora.Constants;
-import com.aurora.extensions.ContextKt;
 import com.aurora.extensions.ToastKt;
 import com.aurora.store.BuildConfig;
 import com.aurora.store.MainActivity;
@@ -58,10 +57,10 @@ import com.aurora.store.data.connection.Updater;
 import com.aurora.store.data.event.DownloadEventListener;
 import com.aurora.store.data.handler.ProgressHandler;
 import com.aurora.store.util.Common;
-import com.aurora.store.util.Preferences;
 import com.aurora.store.util.PreferencesKt;
 import com.aurora.store.util.Variables;
 import com.aurora.store.view.epoxy.views.UpdateModeView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.rosan.dhizuku.api.Dhizuku;
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener;
 import com.saradabar.cpadcustomizetool.data.service.IDeviceOwnerService;
@@ -102,13 +101,13 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
 
     /* ネットワークエラー */
     private void networkError() {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setCancelable(false)
                 .setTitle(R.string.dialog_cpad_title_start_error)
                 .setMessage(R.string.dialog_cpad_error_wifi)
                 .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> {
                     if (dpm.isDeviceOwnerApp(getPackageName())) {
-                        new AlertDialog.Builder(this)
+                        new MaterialAlertDialogBuilder(this)
                                 .setCancelable(false)
                                 .setMessage(R.string.dialog_cpad_clear_device_owner)
                                 .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog2, which2) -> {
@@ -194,7 +193,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                                                 DInstaller();
                                             }
                                         } catch (Exception e) {
-                                            new AlertDialog.Builder(getApplicationContext())
+                                            new MaterialAlertDialogBuilder(this)
                                                     .setCancelable(false)
                                                     .setTitle(R.string.dialog_cpad_title_start_error)
                                                     .setMessage(getResources().getString(R.string.dialog_cpad_error) + "\n" + e.getMessage())
@@ -228,13 +227,13 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
     @Override
     public void onDownloadError() {
         cancelLoadingDialog();
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setCancelable(false)
                 .setTitle(R.string.dialog_cpad_title_start_error)
                 .setMessage("ダウンロードに失敗しました\nネットワークが安定しているか確認してください")
                 .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> {
                     if (dpm.isDeviceOwnerApp(getPackageName())) {
-                        new AlertDialog.Builder(this)
+                        new MaterialAlertDialogBuilder(this)
                                 .setCancelable(false)
                                 .setMessage(R.string.dialog_cpad_clear_device_owner)
                                 .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog2, which2) -> {
@@ -251,13 +250,13 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
     @Override
     public void onConnectionError() {
         cancelLoadingDialog();
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setCancelable(false)
                 .setTitle(R.string.dialog_cpad_title_start_error)
                 .setMessage(R.string.dialog_cpad_error_connection)
                 .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> {
                     if (dpm.isDeviceOwnerApp(getPackageName())) {
-                        new AlertDialog.Builder(this)
+                        new MaterialAlertDialogBuilder(this)
                                 .setCancelable(false)
                                 .setMessage(R.string.dialog_cpad_clear_device_owner)
                                 .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog2, which2) -> {
@@ -301,7 +300,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
         /* Dhizuku通信と権限許可プロンプト処理実装予定 */
         if (!Dhizuku.init(this)) {
             /* Dhizukuが失敗した場合はエラー */
-            new AlertDialog.Builder(this)
+            new MaterialAlertDialogBuilder(this)
                     .setCancelable(false)
                     .setTitle(R.string.dialog_cpad_title_start_error)
                     .setMessage(R.string.dialog_cpad_error_installer)
@@ -326,7 +325,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                             }
                         } else {
                             /* Dhizukuが失敗した場合はエラー */
-                            new AlertDialog.Builder(StartActivity.this)
+                            new MaterialAlertDialogBuilder(StartActivity.this)
                                     .setCancelable(false)
                                     .setTitle(R.string.dialog_cpad_title_start_error)
                                     .setMessage(R.string.dialog_cpad_error_installer)
@@ -384,7 +383,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
             }
         });
 
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setView(view)
                 .setCancelable(false)
                 .setTitle(R.string.dialog_cpad_title_update)
@@ -416,14 +415,9 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
 
     private void setUpdateMode(String s) {
         View v = getLayoutInflater().inflate(R.layout.layout_cpad_update_list, null);
-        List<String> list = new ArrayList<>();
-        list.add("ADB");
-        list.add("デバイスオーナー");
-        list.add("CPad Customize Tool");
-        list.add("Dhizuku");
         List<UpdateModeView.AppData> dataList = new ArrayList<>();
         int i = 0;
-        for (String str : list) {
+        for (String str : Common.list) {
             UpdateModeView.AppData data = new UpdateModeView.AppData();
             data.label = str;
             data.updateMode = i;
@@ -444,7 +438,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                         Common.SET_UPDATE_MODE(this, (int) id);
                         listView.invalidateViews();
                     } else {
-                        new AlertDialog.Builder(this)
+                        new MaterialAlertDialogBuilder(this)
                                 .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
                                 .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
                                 .show();
@@ -455,7 +449,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                         Common.SET_UPDATE_MODE(this, 2);
                         listView.invalidateViews();
                     } else {
-                        new AlertDialog.Builder(this)
+                        new MaterialAlertDialogBuilder(this)
                                 .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
                                 .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
                                 .show();
@@ -463,7 +457,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                 }
             }
         });
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setView(v)
                 .setCancelable(false)
                 .setTitle(getString(R.string.dialog_cpad_title_select_mode))
@@ -475,13 +469,13 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
     }
 
     private void showSupportDialog() {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setCancelable(false)
                 .setTitle(R.string.dialog_cpad_title_start_error)
                 .setMessage(R.string.dialog_cpad_error_not_use)
                 .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> {
                     if (dpm.isDeviceOwnerApp(getPackageName())) {
-                        new AlertDialog.Builder(this)
+                        new MaterialAlertDialogBuilder(this)
                                 .setCancelable(false)
                                 .setMessage(R.string.dialog_cpad_clear_device_owner)
                                 .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog2, which2) -> {
@@ -520,13 +514,13 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
 
     /* 端末チェックエラー */
     private void supportModelError() {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setCancelable(false)
                 .setTitle(R.string.dialog_cpad_title_start_error)
                 .setMessage(R.string.dialog_cpad_error_not_neo)
                 .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> {
                     if (dpm.isDeviceOwnerApp(getPackageName())) {
-                        new AlertDialog.Builder(this)
+                        new MaterialAlertDialogBuilder(this)
                                 .setCancelable(false)
                                 .setMessage(R.string.dialog_cpad_clear_device_owner)
                                 .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog2, which2) -> {
@@ -542,7 +536,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
 
     /* 初回起動お知らせ */
     public void WarningDialog() {
-        AlertDialog alertDialog = new AlertDialog.Builder(this)
+        AlertDialog alertDialog = new MaterialAlertDialogBuilder(this)
                 .setCancelable(false)
                 .setTitle(R.string.dialog_cpad_title_notice_start)
                 .setMessage(R.string.dialog_cpad_notice_start)
@@ -553,7 +547,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                 })
                 .setNegativeButton(R.string.dialog_cpad_disagree, (dialog, which) -> {
                     if (dpm.isDeviceOwnerApp(getPackageName())) {
-                        new AlertDialog.Builder(this)
+                        new MaterialAlertDialogBuilder(this)
                                 .setCancelable(false)
                                 .setMessage(R.string.dialog_cpad_clear_device_owner)
                                 .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog2, which2) -> {

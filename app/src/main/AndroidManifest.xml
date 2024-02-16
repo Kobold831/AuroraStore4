@@ -102,7 +102,15 @@
         </activity>
 
         <service android:name=".data.service.NotificationService" />
-        <service android:name=".data.installer.InstallerService" />
+
+        <service
+            android:name=".data.installer.InstallerService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.aurora.store.data.installer.InstallerService"/>
+            </intent-filter>
+        </service>
+
         <service android:name=".data.service.UpdateService" />
 
         <provider

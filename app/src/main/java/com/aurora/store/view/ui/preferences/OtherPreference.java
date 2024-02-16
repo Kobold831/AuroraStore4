@@ -19,7 +19,6 @@
 
 package com.aurora.store.view.ui.preferences;
 
-import android.app.AlertDialog;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -43,6 +42,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import com.aurora.store.R;
 import com.aurora.store.util.Common;
 import com.aurora.store.view.epoxy.views.UpdateModeView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.saradabar.cpadcustomizetool.data.service.IDeviceOwnerService;
 
 import java.util.ArrayList;
@@ -77,7 +77,7 @@ public class OtherPreference extends PreferenceFragmentCompat {
         preferenceUpdateMode = findPreference("pref_other_update_mode");
 
         preferenceDisableOwner.setOnPreferenceClickListener(preference -> {
-            new AlertDialog.Builder(requireActivity())
+            new MaterialAlertDialogBuilder(requireActivity())
                     .setMessage(getString(R.string.dialog_cpad_clear_device_owner))
                     .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog, which) -> {
                         mDevicePolicyManager.clearDeviceOwnerApp(requireActivity().getPackageName());
@@ -90,14 +90,9 @@ public class OtherPreference extends PreferenceFragmentCompat {
 
         preferenceUpdateMode.setOnPreferenceClickListener(preference -> {
             View v = requireActivity().getLayoutInflater().inflate(R.layout.layout_cpad_update_list, null);
-            List<String> list = new ArrayList<>();
-            list.add("ADB");
-            list.add("デバイスオーナー");
-            list.add("CPad Customize Tool");
-            list.add("Dhizuku");
             List<UpdateModeView.AppData> dataList = new ArrayList<>();
             int i = 0;
-            for (String str : list) {
+            for (String str : Common.list) {
                 UpdateModeView.AppData data = new UpdateModeView.AppData();
                 data.label = str;
                 data.updateMode = i;
@@ -118,7 +113,7 @@ public class OtherPreference extends PreferenceFragmentCompat {
                             Common.SET_UPDATE_MODE(requireActivity(), (int) id);
                             listView.invalidateViews();
                         } else {
-                            new AlertDialog.Builder(requireActivity())
+                            new MaterialAlertDialogBuilder(requireActivity())
                                     .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
                                     .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
                                     .show();
@@ -132,13 +127,13 @@ public class OtherPreference extends PreferenceFragmentCompat {
                                         Common.SET_UPDATE_MODE(requireActivity(), 2);
                                         listView.invalidateViews();
                                     } else {
-                                        new AlertDialog.Builder(requireActivity())
+                                        new MaterialAlertDialogBuilder(requireActivity())
                                                 .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
                                                 .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
                                                 .show();
                                     }
                                 } catch (RemoteException ignored) {
-                                    new AlertDialog.Builder(requireActivity())
+                                    new MaterialAlertDialogBuilder(requireActivity())
                                             .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
                                             .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
                                             .show();
@@ -146,7 +141,7 @@ public class OtherPreference extends PreferenceFragmentCompat {
                             };
                             new Handler(Looper.getMainLooper()).postDelayed(runnable, 1000);
                         } else {
-                            new AlertDialog.Builder(requireActivity())
+                            new MaterialAlertDialogBuilder(requireActivity())
                                     .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
                                     .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
                                     .show();
@@ -154,7 +149,7 @@ public class OtherPreference extends PreferenceFragmentCompat {
                     }
                 }
             });
-            new AlertDialog.Builder(requireActivity())
+            new MaterialAlertDialogBuilder(requireActivity())
                     .setView(v)
                     .setTitle(getString(R.string.dialog_cpad_title_select_mode))
                     .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
