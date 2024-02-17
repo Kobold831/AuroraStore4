@@ -121,7 +121,7 @@ class AuthViewModel(application: Application) : BaseAndroidViewModel(application
                     properties = spoofProvider.getSpoofDeviceProperties()
 
                 val playResponse = HttpClient
-                    .getPreferredClient()
+                    .getPreferredClient(getApplication())
                     .postAuth(
                         Constants.URL_DISPENSER,
                         gson.toJson(properties).toByteArray()
@@ -157,7 +157,7 @@ class AuthViewModel(application: Application) : BaseAndroidViewModel(application
                     properties = spoofProvider.getSpoofDeviceProperties()
 
                 val playResponse = HttpClient
-                    .getPreferredClient()
+                    .getPreferredClient(getApplication())
                     .getAuth(
                         Constants.URL_DISPENSER
                     )
@@ -275,7 +275,7 @@ class AuthViewModel(application: Application) : BaseAndroidViewModel(application
     private fun isValid(authData: AuthData): Boolean {
         return try {
             AuthValidator(authData)
-                .using(HttpClient.getPreferredClient())
+                .using(HttpClient.getPreferredClient(getApplication()))
                 .isValid()
         } catch (e: Exception) {
             false
@@ -289,6 +289,24 @@ class AuthViewModel(application: Application) : BaseAndroidViewModel(application
             authData.locale = spoofProvider.getSpoofLocale()
         } else {
             authData.locale = Locale.getDefault()
+        }
+
+        val versionId =
+            Preferences.getInteger(getApplication(), Preferences.PREFERENCE_VENDING_VERSION)
+        if (versionId != 0) {
+            val resources = (getApplication() as Context).resources
+
+            authData.deviceInfoProvider?.properties?.let {
+                it.setProperty(
+                    "Vending.version",
+                    resources.getStringArray(R.array.pref_vending_version_codes)[versionId]
+                )
+
+                it.setProperty(
+                    "Vending.versionString",
+                    resources.getStringArray(R.array.pref_vending_version)[versionId]
+                )
+            }
         }
 
         if (authData.authToken.isNotEmpty() && authData.deviceConfigToken.isNotEmpty()) {

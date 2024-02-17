@@ -66,17 +66,13 @@
         android:enableOnBackInvokedCallback="true"
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
-        android:killAfterRestore="false"
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
-        android:restoreAnyVersion="true"
-        android:restoreNeedsApplication="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:fullBackupContent="@xml/backup_rules_legacy"
-        android:dataExtractionRules="@xml/backup_rules"
-        tools:targetApi="tiramisu">
+        android:dataExtractionRules="@xml/backup_rules">
 
         <activity
             android:name=".view.ui.launch.StartActivity"
@@ -101,18 +97,19 @@
             <nav-graph android:value="@navigation/mobile_navigation" />
         </activity>
 
-        <service android:name=".data.service.NotificationService" />
+        <!-- Notification Action (Download Complete) -->
+        <activity
+            android:name=".data.activity.InstallActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme.Translucent" />
 
+        <!-- DownloadWorker -->
         <service
-            android:name=".data.installer.InstallerService"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.aurora.store.data.installer.InstallerService"/>
-            </intent-filter>
-        </service>
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
 
-        <service android:name=".data.service.UpdateService" />
-
+        <!-- Third-party installers -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileProvider"
@@ -123,6 +120,7 @@
                 android:resource="@xml/paths" />
         </provider>
 
+        <!-- Shizuku (Installer) -->
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
             android:authorities="${applicationId}.shizuku"
@@ -132,9 +130,31 @@
             android:permission="android.permission.INTERACT_ACROSS_USERS_FULL"
             tools:ignore="MissingClass" />
 
-        <receiver android:name=".data.receiver.DownloadResumeReceiver" />
-        <receiver android:name=".data.receiver.DownloadPauseReceiver" />
-        <receiver android:name=".data.receiver.DownloadCancelReceiver" />
+        <!-- Hilt (WorkManager) -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <!-- Lifecycle (isForeground method in CommonUtils) -->
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
+        <!-- Installation Status Receiver (Session Installer) -->
+        <receiver
+            android:name=".data.receiver.InstallerStatusReceiver"
+            android:exported="false" />
+            
+        <service
+            android:name=".data.installer.InstallerService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.aurora.store.data.installer.InstallerService"/>
+            </intent-filter>
+        </service>
 
         <service
             android:name=".data.service.ResultService"

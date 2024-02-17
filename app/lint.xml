@@ -4,5 +4,4 @@
     <issue id="ProtectedPermissions" severity="ignore" />
     <issue id="QueryAllPackagesPermission" severity="ignore" />
     <issue id="ScopedStorage" severity="ignore" />
-    <issue id="ExpiredTargetSdkVersion" severity="ignore" />
 </lint>

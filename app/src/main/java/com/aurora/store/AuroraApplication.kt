@@ -21,43 +21,45 @@
 package com.aurora.store
 
 import android.app.Application
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.os.Build
 import androidx.core.content.ContextCompat
-import com.aurora.Constants
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import com.aurora.extensions.isPAndAbove
-import com.aurora.store.data.downloader.DownloadManager
 import com.aurora.store.data.receiver.PackageManagerReceiver
-import com.aurora.store.data.service.NotificationService
 import com.aurora.store.util.CommonUtil
+import com.aurora.store.util.DownloadWorkerUtil
 import com.aurora.store.util.PackageUtil
-import com.tonyodev.fetch2.Fetch
+import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 
-class AuroraApplication : Application() {
+@HiltAndroidApp
+class AuroraApplication : Application(), Configuration.Provider {
 
-    private lateinit var fetch: Fetch
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
 
-    companion object{
+    @Inject
+    lateinit var downloadWorkerUtil: DownloadWorkerUtil
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setMinimumLoggingLevel(android.util.Log.INFO)
+            .setWorkerFactory(workerFactory)
+            .build()
+
+    companion object {
         val enqueuedInstalls: MutableSet<String> = mutableSetOf()
     }
 
     override fun onCreate() {
         super.onCreate()
 
-        // TODO: Only exempt required APIs
         // Required for Shizuku installer
-        if (isPAndAbove()) {
-            HiddenApiBypass.addHiddenApiExemptions("")
-        }
+        if (isPAndAbove()) HiddenApiBypass.addHiddenApiExemptions("I", "L")
 
-        //Create Notification Channels : General & Alert
-        createNotificationChannel()
-
-        NotificationService.startService(this)
-
-        fetch = DownloadManager.with(this).fetch
+        // Initialize DownloadWorker to observe and trigger downloads
+        downloadWorkerUtil.init()
 
         //Register broadcast receiver for package install/uninstall
         ContextCompat.registerReceiver(
@@ -70,43 +72,4 @@ class AuroraApplication : Application() {
         CommonUtil.cleanupInstallationSessions(applicationContext)
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-            val channels = ArrayList<NotificationChannel>()
-            channels.add(
-                NotificationChannel(
-                    Constants.NOTIFICATION_CHANNEL_ALERT,
-                    getString(R.string.notification_channel_alert),
-                    NotificationManager.IMPORTANCE_HIGH
-                ).apply {
-                    setSound(null, null)
-                }
-            )
-            channels.add(
-                NotificationChannel(
-                    Constants.NOTIFICATION_CHANNEL_GENERAL,
-                    getString(R.string.notification_channel_general),
-                    NotificationManager.IMPORTANCE_MIN
-                )
-            )
-            channels.add(
-                NotificationChannel(
-                    Constants.NOTIFICATION_CHANNEL_UPDATER_SERVICE,
-                    getString(R.string.notification_channel_updater_service),
-                    NotificationManager.IMPORTANCE_MIN
-                )
-            )
-            channels.add(
-                NotificationChannel(
-                    Constants.NOTIFICATION_CHANNEL_UPDATES,
-                    getString(R.string.notification_channel_updates),
-                    NotificationManager.IMPORTANCE_DEFAULT
-                ).apply {
-                    setSound(null, null)
-                }
-            )
-            notificationManager.createNotificationChannels(channels)
-        }
-    }
 }

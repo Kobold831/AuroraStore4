@@ -21,15 +21,24 @@
 package com.aurora.store.data.installer
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageInstaller
+import android.content.pm.PackageManager
+import android.net.Uri
+import com.aurora.extensions.isOAndAbove
+import com.aurora.extensions.isPAndAbove
 import com.aurora.store.R
+import com.aurora.store.util.PackageUtil
 import com.aurora.store.util.Preferences
 import com.aurora.store.util.Preferences.PREFERENCE_INSTALLER_ID
+import dagger.hilt.android.qualifiers.ApplicationContext
+import rikka.shizuku.Shizuku
+import rikka.sui.Sui
+import javax.inject.Inject
 
-open class AppInstaller private constructor(var context: Context) {
+class AppInstaller @Inject constructor(@ApplicationContext private val context: Context) {
 
     companion object {
-        private var instance: AppInstaller? = null
         fun getErrorString(context: Context, status: Int): String {
             return when (status) {
                 PackageInstaller.STATUS_FAILURE_ABORTED -> context.getString(R.string.installer_status_user_action)
@@ -42,11 +51,30 @@ open class AppInstaller private constructor(var context: Context) {
             }
         }
 
-        fun getInstance(context: Context): AppInstaller {
-            if (instance == null) {
-                instance = AppInstaller(context.applicationContext)
+        fun hasShizukuOrSui(context: Context): Boolean {
+            return PackageUtil.isInstalled(
+                context,
+                ShizukuInstaller.SHIZUKU_PACKAGE_NAME
+            ) || Sui.isSui()
+        }
+
+        fun hasShizukuPerm(): Boolean {
+            return Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+        }
+
+        fun uninstall(context: Context, packageName: String) {
+            val intent = Intent().apply {
+                data = Uri.fromParts("package", packageName, null)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                if (isPAndAbove()) {
+                    action = Intent.ACTION_DELETE
+                } else {
+                    @Suppress("DEPRECATION")
+                    action = Intent.ACTION_UNINSTALL_PACKAGE
+                    putExtra(Intent.EXTRA_RETURN_RESULT, true)
+                }
             }
-            return instance!!
+            context.startActivity(intent)
         }
     }
 
@@ -76,9 +104,17 @@ open class AppInstaller private constructor(var context: Context) {
                 installer
             }
             else -> {
-                val installer = ShizukuInstaller(context)
-                choiceAndInstaller[prefValue] = installer
-                installer
+                if (isOAndAbove()) {
+                    val installer = if (hasShizukuOrSui(context) && hasShizukuPerm()) {
+                        ShizukuInstaller(context)
+                    } else {
+                        SessionInstaller(context)
+                    }
+                    choiceAndInstaller[prefValue] = installer
+                    installer
+                } else {
+                    SessionInstaller(context)
+                }
             }
         }
     }

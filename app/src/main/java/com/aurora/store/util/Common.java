@@ -19,12 +19,18 @@
 
 package com.aurora.store.util;
 
+import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
+import com.rosan.dhizuku.api.Dhizuku;
+
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,5 +57,24 @@ public class Common {
     public static int GET_UPDATE_MODE(Context context) {
         SharedPreferences sp = android.preference.PreferenceManager.getDefaultSharedPreferences(context);
         return sp.getInt("update_mode", 0);
+    }
+
+    public static boolean isDhizukuActive(Context context) {
+        DevicePolicyManager dpm = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
+        if (dpm.isDeviceOwnerApp("com.rosan.dhizuku")) {
+            if (Dhizuku.init(context)) {
+                return Dhizuku.isPermissionGranted();
+            }
+        }
+        return false;
+    }
+
+    public static List<String> getFilePath(List<File> listFiles) {
+        List<String> s = new ArrayList<>();
+        for (File file : listFiles) {
+            Log.e("TAG", file.getPath());
+            s.add(file.getPath());
+        }
+        return s;
     }
 }

@@ -20,7 +20,6 @@
 package com.aurora.store.view.ui.onboarding
 
 import android.os.Bundle
-import android.os.Environment
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -29,18 +28,20 @@ import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.aurora.extensions.isSAndAbove
+import com.aurora.store.BuildConfig
 import com.aurora.store.R
 import com.aurora.store.data.work.UpdateWorker
 import com.aurora.store.databinding.FragmentOnboardingBinding
+import com.aurora.store.util.CertUtil
+import com.aurora.store.util.NotificationUtil
 import com.aurora.store.util.PathUtil
 import com.aurora.store.util.Preferences
 import com.aurora.store.util.Preferences.PREFERENCE_AUTO_DELETE
 import com.aurora.store.util.Preferences.PREFERENCE_DEFAULT
 import com.aurora.store.util.Preferences.PREFERENCE_DEFAULT_SELECTED_TAB
-import com.aurora.store.util.Preferences.PREFERENCE_DOWNLOAD_ACTIVE
 import com.aurora.store.util.Preferences.PREFERENCE_DOWNLOAD_DIRECTORY
 import com.aurora.store.util.Preferences.PREFERENCE_DOWNLOAD_EXTERNAL
-import com.aurora.store.util.Preferences.PREFERENCE_DOWNLOAD_WIFI_ONLY
+import com.aurora.store.util.Preferences.PREFERENCE_FILTER_AURORA_ONLY
 import com.aurora.store.util.Preferences.PREFERENCE_FILTER_FDROID
 import com.aurora.store.util.Preferences.PREFERENCE_FILTER_GOOGLE
 import com.aurora.store.util.Preferences.PREFERENCE_FILTER_SEARCH
@@ -48,14 +49,23 @@ import com.aurora.store.util.Preferences.PREFERENCE_FOR_YOU
 import com.aurora.store.util.Preferences.PREFERENCE_INSECURE_ANONYMOUS
 import com.aurora.store.util.Preferences.PREFERENCE_INSTALLER_ID
 import com.aurora.store.util.Preferences.PREFERENCE_INTRO
+import com.aurora.store.util.Preferences.PREFERENCE_PROXY_ENABLED
+import com.aurora.store.util.Preferences.PREFERENCE_PROXY_INFO
+import com.aurora.store.util.Preferences.PREFERENCE_PROXY_URL
+import com.aurora.store.util.Preferences.PREFERENCE_SELF_UPDATE
 import com.aurora.store.util.Preferences.PREFERENCE_SIMILAR
 import com.aurora.store.util.Preferences.PREFERENCE_THEME_ACCENT
 import com.aurora.store.util.Preferences.PREFERENCE_THEME_TYPE
-import com.aurora.store.util.Preferences.PREFERENCE_UPDATES_CHECK
+import com.aurora.store.util.Preferences.PREFERENCE_UPDATES_AUTO
+import com.aurora.store.util.Preferences.PREFERENCE_UPDATES_CHECK_INTERVAL
 import com.aurora.store.util.Preferences.PREFERENCE_UPDATES_EXTENDED
+import com.aurora.store.util.Preferences.PREFERENCE_VENDING_VERSION
 import com.aurora.store.util.save
 import com.google.android.material.tabs.TabLayoutMediator
+import dagger.hilt.android.AndroidEntryPoint
+import kotlin.properties.Delegates
 
+@AndroidEntryPoint
 class OnboardingFragment : Fragment(R.layout.fragment_onboarding) {
 
     private var _binding: FragmentOnboardingBinding? = null
@@ -134,7 +144,13 @@ class OnboardingFragment : Fragment(R.layout.fragment_onboarding) {
             binding.btnForward.isEnabled = true
             binding.btnForward.setOnClickListener {
                 save(PREFERENCE_INTRO, true)
+
+                //Create Notification Channels : General & Alert
+                NotificationUtil.createNotificationChannel(requireContext())
+
+                // Schedule required update workers
                 UpdateWorker.scheduleAutomatedCheck(requireContext())
+
                 findNavController().navigate(
                     OnboardingFragmentDirections.actionOnboardingFragmentToSplashFragment()
                 )
@@ -151,18 +167,21 @@ class OnboardingFragment : Fragment(R.layout.fragment_onboarding) {
 
     private fun loadDefaultPreferences() {
         /*Filters*/
+        save(PREFERENCE_FILTER_AURORA_ONLY, false)
         save(PREFERENCE_FILTER_FDROID, true)
         save(PREFERENCE_FILTER_GOOGLE, false)
         save(PREFERENCE_FILTER_SEARCH, true)
 
         /*Downloader*/
-        save(PREFERENCE_DOWNLOAD_ACTIVE, 3)
         save(PREFERENCE_DOWNLOAD_EXTERNAL, false)
         save(PREFERENCE_DOWNLOAD_DIRECTORY, PathUtil.getExternalPath(requireContext()))
-        save(PREFERENCE_DOWNLOAD_WIFI_ONLY, false)
 
         /*Network*/
         save(PREFERENCE_INSECURE_ANONYMOUS, false)
+        save(PREFERENCE_PROXY_ENABLED, false)
+        save(PREFERENCE_PROXY_URL, "")
+        save(PREFERENCE_PROXY_INFO, "{}")
+        save(PREFERENCE_VENDING_VERSION, 0)
 
         /*Customization*/
         save(PREFERENCE_THEME_TYPE, 0)
@@ -176,6 +195,7 @@ class OnboardingFragment : Fragment(R.layout.fragment_onboarding) {
 
         /*Updates*/
         save(PREFERENCE_UPDATES_EXTENDED, false)
-        save(PREFERENCE_UPDATES_CHECK, true)
+        save(PREFERENCE_UPDATES_AUTO, 2)
+        save(PREFERENCE_UPDATES_CHECK_INTERVAL, 3)
     }
 }

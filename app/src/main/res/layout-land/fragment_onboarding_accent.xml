@@ -70,7 +70,7 @@
             android:overScrollMode="never"
             android:padding="@dimen/padding_normal"
             android:scrollbars="none"
-            app:itemSpacing="@dimen/margin_normal"
+            app:itemSpacing="@dimen/margin_small"
             tools:listitem="@layout/view_theme" />
     </LinearLayout>
 </FrameLayout>

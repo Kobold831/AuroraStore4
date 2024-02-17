@@ -20,7 +20,6 @@
 package com.aurora.store.view.ui.sheets
 
 import android.content.pm.PackageManager
-import android.content.pm.PermissionGroupInfo
 import android.content.pm.PermissionInfo
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -31,10 +30,13 @@ import androidx.navigation.fragment.navArgs
 import com.aurora.extensions.hide
 import com.aurora.extensions.show
 import com.aurora.store.R
+import com.aurora.store.data.model.PermissionGroupInfo
 import com.aurora.store.databinding.SheetPermissionsBinding
 import com.aurora.store.view.custom.layouts.PermissionGroup
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 
+@AndroidEntryPoint
 class PermissionBottomSheet : BaseBottomSheet() {
 
     private lateinit var B: SheetPermissionsBinding
@@ -108,7 +110,12 @@ class PermissionBottomSheet : BaseBottomSheet() {
             getFakePermissionGroupInfo(permissionInfo.packageName)
         } else {
             try {
-                packageManager.getPermissionGroupInfo(permissionInfo.group!!, 0)
+                val platformGroup = packageManager.getPermissionGroupInfo(permissionInfo.group!!, 0)
+                PermissionGroupInfo(
+                    platformGroup.name,
+                    platformGroup.icon,
+                    platformGroup.loadLabel(packageManager).toString()
+                )
             } catch (e: PackageManager.NameNotFoundException) {
                 getFakePermissionGroupInfo(permissionInfo.packageName)
             }
@@ -120,21 +127,12 @@ class PermissionBottomSheet : BaseBottomSheet() {
     }
 
     private fun getFakePermissionGroupInfo(packageName: String): PermissionGroupInfo {
-        val permissionGroupInfo = PermissionGroupInfo()
-        when (packageName) {
-            "android" -> {
-                permissionGroupInfo.icon = R.drawable.ic_permission_android
-                permissionGroupInfo.name = "android"
-            }
-            "com.google.android.gsf", "com.android.vending" -> {
-                permissionGroupInfo.icon = R.drawable.ic_permission_google
-                permissionGroupInfo.name = "google"
-            }
-            else -> {
-                permissionGroupInfo.icon = R.drawable.ic_permission_unknown
-                permissionGroupInfo.name = "unknown"
-            }
+        return when (packageName) {
+            "android" -> PermissionGroupInfo("android", R.drawable.ic_permission_android)
+            "com.google.android.gsf",
+            "com.android.vending" -> PermissionGroupInfo("google", R.drawable.ic_permission_google)
+
+            else -> PermissionGroupInfo()
         }
-        return permissionGroupInfo
     }
 }

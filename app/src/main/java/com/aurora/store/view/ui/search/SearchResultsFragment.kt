@@ -34,7 +34,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.aurora.gplayapi.data.models.App
 import com.aurora.gplayapi.data.models.SearchBundle
 import com.aurora.store.R
@@ -51,17 +50,16 @@ import com.aurora.store.view.ui.commons.BaseFragment
 import com.aurora.store.viewmodel.search.SearchResultViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
-
+@AndroidEntryPoint
 class SearchResultsFragment : BaseFragment(R.layout.fragment_search_result),
     OnSharedPreferenceChangeListener {
 
     private var _binding: FragmentSearchResultBinding? = null
     private val binding: FragmentSearchResultBinding
         get() = _binding!!
-
-    private val args: SearchResultsFragmentArgs by navArgs()
 
     lateinit var VM: SearchResultViewModel
 
@@ -124,7 +122,7 @@ class SearchResultsFragment : BaseFragment(R.layout.fragment_search_result),
             updateController(searchBundle)
         }
 
-        query = args.query
+        query = requireArguments().getString("query")
         query?.let { updateQuery(it) }
 
         lifecycleScope.launch {
@@ -268,6 +266,7 @@ class SearchResultsFragment : BaseFragment(R.layout.fragment_search_result),
             ) {
                 query = searchView.text.toString()
                 query?.let {
+                    requireArguments().putString("query", it)
                     queryViewModel(it)
                     return@setOnEditorActionListener true
                 }

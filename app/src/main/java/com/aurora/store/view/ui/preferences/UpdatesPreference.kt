@@ -23,26 +23,51 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.widget.Toolbar
 import androidx.navigation.fragment.findNavController
+import androidx.preference.ListPreference
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.SwitchPreferenceCompat
+import androidx.preference.SeekBarPreference
 import com.aurora.store.R
 import com.aurora.store.data.work.UpdateWorker
-import com.aurora.store.util.Preferences.PREFERENCE_UPDATES_CHECK
+import com.aurora.store.util.Preferences
+import com.aurora.store.util.Preferences.PREFERENCE_UPDATES_AUTO
+import com.aurora.store.util.Preferences.PREFERENCE_UPDATES_CHECK_INTERVAL
+import com.aurora.store.view.custom.preference.ListPreferenceMaterialDialogFragmentCompat
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class UpdatesPreference : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences_updates, rootKey)
 
-        findPreference<SwitchPreferenceCompat>(PREFERENCE_UPDATES_CHECK)
+        findPreference<SeekBarPreference>(PREFERENCE_UPDATES_CHECK_INTERVAL)?.isEnabled =
+            Preferences.getInteger(requireContext(), PREFERENCE_UPDATES_AUTO, 3) != 0
+
+        findPreference<ListPreference>(PREFERENCE_UPDATES_AUTO)
             ?.setOnPreferenceChangeListener { _, newValue ->
-                if (newValue.toString().toBoolean()) {
-                    UpdateWorker.scheduleAutomatedCheck(requireContext())
-                } else {
-                    UpdateWorker.cancelAutomatedCheck(requireContext())
+                when (newValue.toString().toInt()) {
+                    0 -> UpdateWorker.cancelAutomatedCheck(requireContext())
+                    else -> UpdateWorker.scheduleAutomatedCheck(requireContext())
                 }
+                findPreference<SeekBarPreference>(PREFERENCE_UPDATES_CHECK_INTERVAL)?.isEnabled =
+                    newValue.toString().toInt() != 0
                 true
             }
+    }
+
+    override fun onDisplayPreferenceDialog(preference: Preference) {
+        if (preference is ListPreference) {
+            val dialogFragment =
+                ListPreferenceMaterialDialogFragmentCompat.newInstance(preference.getKey())
+            dialogFragment.setTargetFragment(this, 0)
+            dialogFragment.show(
+                parentFragmentManager,
+                ListPreferenceMaterialDialogFragmentCompat.PREFERENCE_DIALOG_FRAGMENT_TAG
+            )
+        } else {
+            super.onDisplayPreferenceDialog(preference)
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

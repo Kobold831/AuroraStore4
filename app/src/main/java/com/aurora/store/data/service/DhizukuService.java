@@ -30,7 +30,7 @@ public class DhizukuService extends IDhizukuService.Stub {
     }
 
     @Override
-    public boolean tryInstallPackages(String str, List<Uri> uriList) throws RemoteException {
+    public boolean tryInstallPackages(List<String> listFiles) throws RemoteException {
         int sessionId;
 
         try {
@@ -43,13 +43,13 @@ public class DhizukuService extends IDhizukuService.Stub {
             return false;
         }
 
-        for (Uri uri : uriList) {
+        for (String file : listFiles) {
             try {
-                if (!writeSession(context.getPackageManager().getPackageInstaller(), sessionId, new File(Environment.getExternalStorageDirectory() + uri.getPath().replace("/external_files", "")))) {
+                if (!writeSession(context.getPackageManager().getPackageInstaller(), sessionId, new File(file))) {
                     context.getPackageManager().getPackageInstaller().abandonSession(sessionId);
                     return false;
                 }
-            } catch (IOException ignored) {
+            } catch (Exception ignored) {
                 context.getPackageManager().getPackageInstaller().abandonSession(sessionId);
                 return false;
             }

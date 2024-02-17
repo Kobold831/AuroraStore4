@@ -19,23 +19,69 @@
 
 package com.aurora.store.view.ui.preferences
 
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.widget.Toolbar
 import androidx.navigation.fragment.findNavController
+import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import com.aurora.extensions.isOAndAbove
 import com.aurora.extensions.runOnUiThread
+import com.aurora.extensions.showDialog
 import com.aurora.extensions.toast
 import com.aurora.store.R
+import com.aurora.store.data.installer.AppInstaller
 import com.aurora.store.util.CommonUtil
+import com.aurora.store.util.Log
 import com.aurora.store.util.Preferences
+import com.aurora.store.util.save
 import com.aurora.store.view.custom.preference.AuroraListPreference
+import com.aurora.store.view.custom.preference.ListPreferenceMaterialDialogFragmentCompat
+import com.aurora.store.view.custom.preference.ListPreferenceMaterialDialogFragmentCompat.Companion.PREFERENCE_DIALOG_FRAGMENT_TAG
+import dagger.hilt.android.AndroidEntryPoint
+import rikka.shizuku.Shizuku
+import rikka.sui.Sui
 
+@AndroidEntryPoint
 class InstallationPreference : PreferenceFragmentCompat() {
+
+    private var shizukuAlive = Sui.isSui()
+    private val shizukuAliveListener = Shizuku.OnBinderReceivedListener {
+        Log.d("ShizukuInstaller Alive!")
+        shizukuAlive = true
+    }
+    private val shizukuDeadListener = Shizuku.OnBinderDeadListener {
+        Log.d("ShizukuInstaller Dead!")
+        shizukuAlive = false
+    }
+    private val shizukuResultListener =
+        Shizuku.OnRequestPermissionResultListener { _: Int, result: Int ->
+            if (result == PackageManager.PERMISSION_GRANTED) {
+                save(Preferences.PREFERENCE_INSTALLER_ID, 5)
+                activity?.recreate()
+            } else {
+                showDialog(
+                    R.string.action_installations,
+                    R.string.installer_shizuku_unavailable
+                )
+            }
+        }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences_installation, rootKey)
+    }
+
+    override fun onDisplayPreferenceDialog(preference: Preference) {
+        if (preference is ListPreference) {
+            val dialogFragment =
+                ListPreferenceMaterialDialogFragmentCompat.newInstance(preference.getKey())
+            dialogFragment.setTargetFragment(this, 0)
+            dialogFragment.show(parentFragmentManager, PREFERENCE_DIALOG_FRAGMENT_TAG)
+        } else {
+            super.onDisplayPreferenceDialog(preference)
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -44,6 +90,12 @@ class InstallationPreference : PreferenceFragmentCompat() {
         view.findViewById<Toolbar>(R.id.toolbar)?.apply {
             title = getString(R.string.title_installation)
             setNavigationOnClickListener { findNavController().navigateUp() }
+        }
+
+        if (AppInstaller.hasShizukuOrSui(requireContext()) && isOAndAbove()) {
+            Shizuku.addBinderReceivedListenerSticky(shizukuAliveListener)
+            Shizuku.addBinderDeadListener(shizukuDeadListener)
+            Shizuku.addRequestPermissionResultListener(shizukuResultListener)
         }
 
         val abandonPreference: Preference? =

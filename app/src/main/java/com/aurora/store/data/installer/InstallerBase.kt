@@ -20,14 +20,13 @@
 package com.aurora.store.data.installer
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import androidx.core.content.FileProvider
 import com.aurora.store.AuroraApplication
 import com.aurora.store.BuildConfig
 import com.aurora.store.data.event.InstallerEvent
 import com.aurora.store.util.Log
+import com.aurora.store.util.PathUtil
 import org.greenrobot.eventbus.EventBus
 import java.io.File
 
@@ -45,23 +44,6 @@ abstract class InstallerBase(protected var context: Context) : IInstaller {
         AuroraApplication.enqueuedInstalls.remove(packageName)
     }
 
-    override fun uninstall(packageName: String) {
-        val uri = Uri.fromParts("package", packageName, null)
-        val intent = Intent().apply {
-            data = uri
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-            intent.action = Intent.ACTION_DELETE
-        } else {
-            intent.action = Intent.ACTION_UNINSTALL_PACKAGE
-            intent.putExtra(Intent.EXTRA_RETURN_RESULT, true)
-        }
-
-        context.startActivity(intent)
-    }
-
     open fun postError(packageName: String, error: String?, extra: String?) {
         Log.e("Service Error :$error")
 
@@ -72,6 +54,15 @@ abstract class InstallerBase(protected var context: Context) : IInstaller {
         )
 
         EventBus.getDefault().post(event)
+    }
+
+    open fun getFiles(packageName: String, versionCode: Int, sharedLibPackageName: String = ""): List<File> {
+        val downloadDir = if (sharedLibPackageName.isNotBlank()) {
+            PathUtil.getLibDownloadDir(context, packageName, versionCode, sharedLibPackageName)
+        } else {
+            PathUtil.getAppDownloadDir(context, packageName, versionCode)
+        }
+        return downloadDir.listFiles()!!.filter { it.path.endsWith(".apk") }
     }
 
     open fun getUri(file: File): Uri {

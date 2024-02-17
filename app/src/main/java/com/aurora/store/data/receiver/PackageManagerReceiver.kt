@@ -23,25 +23,58 @@ import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.aurora.store.BuildConfig
-import com.aurora.store.data.downloader.RequestGroupIdBuilder
+import android.util.Log
+import com.aurora.extensions.goAsync
 import com.aurora.store.data.event.BusEvent.InstallEvent
 import com.aurora.store.data.event.BusEvent.UninstallEvent
 import com.aurora.store.data.installer.AppInstaller
+import com.aurora.store.data.model.DownloadStatus
+import com.aurora.store.data.room.download.Download
+import com.aurora.store.util.DownloadWorkerUtil
+import com.aurora.store.util.NotificationUtil
+import com.aurora.store.util.PackageUtil.isSharedLibrary
 import com.aurora.store.util.PathUtil
 import com.aurora.store.util.Preferences
+import com.aurora.store.util.Preferences.PREFERENCE_AUTO_DELETE
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.firstOrNull
 import org.greenrobot.eventbus.EventBus
-import java.io.File
 
+@AndroidEntryPoint
 open class PackageManagerReceiver : BroadcastReceiver() {
 
-    override fun onReceive(context: Context, intent: Intent) {
+    private val TAG = PackageManagerReceiver::class.java.simpleName
+
+    @Inject
+    lateinit var downloadWorkerUtil: DownloadWorkerUtil
+
+    @Inject
+    lateinit var appInstaller: AppInstaller
+
+    override fun onReceive(context: Context, intent: Intent) = goAsync {
         if (intent.action != null && intent.data != null) {
             val packageName = intent.data!!.encodedSchemeSpecificPart
 
+            // We don't care about shared libraries, bail out
+            if (isSharedLibrary(context, packageName)) return@goAsync
+
             when (intent.action) {
                 Intent.ACTION_PACKAGE_ADDED -> {
+                    Log.i(TAG, "Installed $packageName")
                     EventBus.getDefault().post(InstallEvent(packageName, ""))
+
+                    downloadWorkerUtil.downloadsList.filter { it.isNotEmpty() }.firstOrNull()
+                        ?.find { it.packageName == packageName && it.downloadStatus == DownloadStatus.COMPLETED }
+                        ?.let {
+                            notifyInstallation(context, it)
+                            if (Preferences.getBoolean(context, PREFERENCE_AUTO_DELETE)) {
+                                clearDownloads(context, it)
+                            }
+                        }
                 }
 
                 Intent.ACTION_PACKAGE_REMOVED -> {
@@ -50,43 +83,23 @@ open class PackageManagerReceiver : BroadcastReceiver() {
             }
 
             //Clear installation queue
-            AppInstaller.getInstance(context)
-                .getPreferredInstaller()
-                .removeFromInstallQueue(packageName)
-
-            //clearNotification(context, packageName)
-
-            val isAutoDeleteAPKEnabled = Preferences.getBoolean(
-                context,
-                Preferences.PREFERENCE_AUTO_DELETE
-            )
-
-            if (isAutoDeleteAPKEnabled)
-                clearDownloads(context, packageName)
-
-            //Clear self update apk
-            if (packageName == BuildConfig.APPLICATION_ID)
-                clearDownloads(context, packageName)
+            appInstaller.getPreferredInstaller().removeFromInstallQueue(packageName)
         }
     }
 
-    private fun clearNotification(context: Context, packageName: String) {
-        val notificationManager = context.applicationContext
-            .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val groupIDsOfPackageName = RequestGroupIdBuilder.getGroupIDsForApp(context, packageName.hashCode())
-        groupIDsOfPackageName.forEach {
-            notificationManager.cancel(packageName, it)
-        }
-    }
-
-    private fun clearDownloads(context: Context, packageName: String) {
+    private fun clearDownloads(context: Context, download: Download) {
         try {
-            val rootDirPath = PathUtil.getPackageDirectory(context, packageName)
-            val rootDir = File(rootDirPath)
-            if (rootDir.exists())
-                rootDir.deleteRecursively()
-        } catch (e: Exception) {
-
+            PathUtil.getAppDownloadDir(context, download.packageName, download.versionCode)
+                .deleteRecursively()
+        } catch (exception: Exception) {
+            Log.e(TAG, "Failed to delete $download.packageName's downloads", exception)
         }
+    }
+
+    private fun notifyInstallation(context: Context, download: Download) {
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notification = NotificationUtil.getInstallNotification(context, download)
+        notificationManager.notify(download.packageName.hashCode(), notification)
     }
 }

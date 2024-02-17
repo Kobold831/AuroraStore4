@@ -19,18 +19,31 @@
 
 package com.aurora.store.view.ui.onboarding
 
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
+import androidx.navigation.fragment.findNavController
+import com.aurora.extensions.isMIUI
+import com.aurora.extensions.isMiuiOptimizationDisabled
+import com.aurora.extensions.isOAndAbove
+import com.aurora.extensions.showDialog
 import com.aurora.store.R
+import com.aurora.store.data.installer.AppInstaller.Companion.hasShizukuOrSui
 import com.aurora.store.data.model.Installer
 import com.aurora.store.databinding.FragmentOnboardingInstallerBinding
+import com.aurora.store.util.Log
 import com.aurora.store.util.Preferences
 import com.aurora.store.util.Preferences.PREFERENCE_INSTALLER_ID
+import com.aurora.store.util.save
 import com.aurora.store.view.epoxy.views.preference.InstallerViewModel_
 import com.aurora.store.view.ui.commons.BaseFragment
 import com.google.gson.reflect.TypeToken
+import dagger.hilt.android.AndroidEntryPoint
+import rikka.shizuku.Shizuku
+import rikka.sui.Sui
 import java.nio.charset.StandardCharsets
 
+@AndroidEntryPoint
 class InstallerFragment : BaseFragment(R.layout.fragment_onboarding_installer) {
 
     private var _binding: FragmentOnboardingInstallerBinding? = null
@@ -38,11 +51,41 @@ class InstallerFragment : BaseFragment(R.layout.fragment_onboarding_installer) {
 
     private var installerId: Int = 0
 
+    private var shizukuAlive = Sui.isSui()
+    private val shizukuAliveListener = Shizuku.OnBinderReceivedListener {
+        Log.d("ShizukuInstaller Alive!")
+        shizukuAlive = true
+    }
+    private val shizukuDeadListener = Shizuku.OnBinderDeadListener {
+        Log.d("ShizukuInstaller Dead!")
+        shizukuAlive = false
+    }
+
+    private val shizukuResultListener =
+        Shizuku.OnRequestPermissionResultListener { _: Int, result: Int ->
+            if (result == PackageManager.PERMISSION_GRANTED) {
+                this.installerId = 5
+                save(PREFERENCE_INSTALLER_ID, 5)
+                binding.epoxyRecycler.requestModelBuild()
+            } else {
+                showDialog(
+                    R.string.action_installations,
+                    R.string.installer_shizuku_unavailable
+                )
+            }
+        }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentOnboardingInstallerBinding.bind(view)
 
         installerId = Preferences.getInteger(requireContext(), PREFERENCE_INSTALLER_ID)
+
+        if (hasShizukuOrSui(requireContext()) && isOAndAbove()) {
+            Shizuku.addBinderReceivedListenerSticky(shizukuAliveListener)
+            Shizuku.addBinderDeadListener(shizukuDeadListener)
+            Shizuku.addRequestPermissionResultListener(shizukuResultListener)
+        }
 
         // RecyclerView
         binding.epoxyRecycler.withModels {
@@ -60,11 +103,26 @@ class InstallerFragment : BaseFragment(R.layout.fragment_onboarding_installer) {
                 )
             }
         }
+
+        if (isMIUI() && !isMiuiOptimizationDisabled()) {
+            findNavController().navigate(
+                OnboardingFragmentDirections.actionOnboardingFragmentToDeviceMiuiSheet()
+            )
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onDestroy() {
+        if (hasShizukuOrSui(requireContext()) && isOAndAbove()) {
+            Shizuku.removeBinderReceivedListener(shizukuAliveListener)
+            Shizuku.removeBinderDeadListener(shizukuDeadListener)
+            Shizuku.removeRequestPermissionResultListener(shizukuResultListener)
+        }
+        super.onDestroy()
     }
 
     private fun save(installerId: Int) {
@@ -92,4 +150,5 @@ class InstallerFragment : BaseFragment(R.layout.fragment_onboarding_installer) {
             object : TypeToken<MutableList<Installer?>?>() {}.type
         )
     }
+
 }

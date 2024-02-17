@@ -102,11 +102,6 @@
         android:label="@string/title_settings"
         tools:layout="@layout/fragment_setting" />
     <fragment
-        android:id="@+id/otherPreference"
-        android:name="com.aurora.store.view.ui.preferences.OtherPreference"
-        android:label="OtherPreference"
-        tools:layout="@layout/fragment_setting" />
-    <fragment
         android:id="@+id/downloadPreference"
         android:name="com.aurora.store.view.ui.preferences.DownloadPreference"
         android:label="DownloadPreference"
@@ -135,6 +130,11 @@
         android:id="@+id/updatesPreference"
         android:name="com.aurora.store.view.ui.preferences.UpdatesPreference"
         android:label="UpdatesPreference"
+        tools:layout="@layout/fragment_setting" />
+    <fragment
+        android:id="@+id/otherPreference"
+        android:name="com.aurora.store.view.ui.preferences.OtherPreference"
+        android:label="OtherPreference"
         tools:layout="@layout/fragment_setting" />
     <fragment
         android:id="@+id/searchSuggestionFragment"
@@ -388,6 +388,9 @@
             app:launchSingleTop="true"
             app:popUpTo="@id/mobile_navigation"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_onboardingFragment_to_deviceMiuiSheet"
+            app:destination="@id/deviceMiuiSheet" />
     </fragment>
     <dialog
         android:id="@+id/appMenuSheet"
@@ -434,9 +437,14 @@
         android:label="DownloadMenuSheet"
         tools:layout="@layout/sheet_download_menu">
         <argument
-            android:name="downloadFile"
-            app:argType="com.aurora.store.data.model.DownloadFile" />
+            android:name="download"
+            app:argType="com.aurora.store.data.room.download.Download" />
     </dialog>
+    <dialog
+        android:id="@+id/deviceMiuiSheet"
+        android:name="com.aurora.store.view.ui.sheets.DeviceMiuiSheet"
+        android:label="DeviceMiuiSheet"
+        tools:layout="@layout/sheet_device_miui" />
     <dialog
         android:id="@+id/installErrorDialogSheet"
         android:name="com.aurora.store.view.ui.sheets.InstallErrorDialogSheet"
@@ -455,4 +463,9 @@
             android:name="extra"
             app:argType="string" />
     </dialog>
+    <dialog
+        android:id="@+id/dozeWarningSheet"
+        android:name="com.aurora.store.view.ui.sheets.DozeWarningSheet"
+        android:label="DozeWarningSheet"
+        tools:layout="@layout/sheet_doze_warning"/>
 </navigation>

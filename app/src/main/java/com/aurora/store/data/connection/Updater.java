@@ -190,7 +190,7 @@ public class Updater {
     private void dInstall() {
         Runnable runnable = () -> {
             try {
-                if (!mDhizukuService.tryInstallPackages("", Collections.singletonList(Uri.parse(Uri.fromFile(new File(activity.getExternalCacheDir(), "update.apk")).getPath())))) {
+                if (!mDhizukuService.tryInstallPackages(Collections.singletonList(new File(activity.getExternalCacheDir(), "update.apk").getPath()))) {
                     new AlertDialog.Builder(activity)
                             .setCancelable(false)
                             .setMessage(R.string.dialog_cpad_error)

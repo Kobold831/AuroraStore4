@@ -53,8 +53,14 @@
 
     <dimen name="height_bottom_adj">100dp</dimen>
 
+    <dimen name="cluster_size">128dp</dimen>
+    <dimen name="elevation_small">3dp</dimen>
+
     <dimen name="height_header">36dp</dimen>
+    <dimen name="height_chip">52dp</dimen>
     <dimen name="height_button">56dp</dimen>
     <dimen name="width_button">200dp</dimen>
+    <dimen name="height_bottomsheet_button">52dp</dimen>
     <dimen name="height_peek">64dp</dimen>
+    <dimen name="height_nav_header">148dp</dimen>
 </resources>

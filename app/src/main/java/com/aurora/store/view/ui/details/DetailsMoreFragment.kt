@@ -37,8 +37,10 @@ import com.aurora.store.view.epoxy.views.details.InfoViewModel_
 import com.aurora.store.view.epoxy.views.details.MoreBadgeViewModel_
 import com.aurora.store.view.ui.commons.BaseFragment
 import com.aurora.store.viewmodel.details.DetailsMoreViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class DetailsMoreFragment : BaseFragment(R.layout.fragment_details_more) {
 
     private var _binding: FragmentDetailsMoreBinding? = null
@@ -108,7 +110,7 @@ class DetailsMoreFragment : BaseFragment(R.layout.fragment_details_more) {
                 add(
                     HeaderViewModel_()
                         .id("badge_header")
-                        .title("ファイル")
+                        .title("Files")
                 )
 
                 app.fileList.forEach {
@@ -125,7 +127,7 @@ class DetailsMoreFragment : BaseFragment(R.layout.fragment_details_more) {
                 add(
                     HeaderViewModel_()
                         .id("badge_header")
-                        .title("詳細")
+                        .title("More")
                 )
 
                 app.infoBadges.forEach {
@@ -153,7 +155,7 @@ class DetailsMoreFragment : BaseFragment(R.layout.fragment_details_more) {
                 add(
                     HeaderViewModel_()
                         .id("info_header")
-                        .title("情報")
+                        .title("Info")
                 )
                 app.appInfo.appInfoMap.forEach {
                     add(

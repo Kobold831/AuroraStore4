@@ -7,65 +7,81 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import com.aurora.store.R
+import com.aurora.store.data.room.download.Download
 import com.aurora.store.data.service.DhizukuService
 import com.aurora.store.data.service.IDhizukuService
+import com.aurora.store.util.Common
+import com.aurora.store.util.Log
+import com.aurora.store.util.PackageUtil
 import com.rosan.dhizuku.api.Dhizuku
-import com.rosan.dhizuku.api.DhizukuRequestPermissionListener
 import com.rosan.dhizuku.api.DhizukuUserServiceArgs
-import java.io.File
 
-class DhizukuInstaller(context: Context) : SessionInstallerBase(context) {
+class DhizukuInstaller(context: Context) : InstallerBase(context) {
 
-    private var service: IDhizukuService? = null
+    private var mDhizukuService: IDhizukuService? = null
 
-    override fun install(packageName: String, files: List<Any>) {
-        if (!Dhizuku.init(context)) {
-            return
-        }
-        if (!Dhizuku.isPermissionGranted()) Dhizuku.requestPermission(object :
-            DhizukuRequestPermissionListener() {
-            override fun onRequestPermission(grantResult: Int) {
-                bindUserService()
+    override fun install(download: Download) {
+        if (isAlreadyQueued(download.packageName)) {
+            Log.i("${download.packageName} already queued")
+        } else {
+            if (!Dhizuku.init(context)) {
+                return
             }
-        }) else bindUserService()
 
-        val uriList = files.map {
-            when (it) {
-                is File -> getUri(it)
-                is String -> getUri(File(it))
-                else -> {
-                    throw Exception("Invalid data, expecting listOf() File or String")
-                }
+            if (Common.isDhizukuActive(context)) {
+                tryBindDhizukuService()
+            } else {
+                return
             }
-        }
 
-        try {
-            val runnable = Runnable {
-                if (!service?.tryInstallPackages(packageName, uriList)!!) {
-                    removeFromInstallQueue(packageName)
-                    postError(
-                        packageName,
-                        context.getString(R.string.dialog_cpad_error),
-                        null
+            download.sharedLibs.forEach {
+                if (!PackageUtil.isSharedLibraryInstalled(
+                        context,
+                        it.packageName,
+                        it.versionCode
                     )
+                ) {
+                    TODO("AIDL修正予定")
                 }
             }
-            Handler(Looper.getMainLooper()).postDelayed(runnable, 5000)
-        } catch (e: Exception) {
-            removeFromInstallQueue(packageName)
-            postError(
-                packageName,
-                e.localizedMessage,
-                e.stackTraceToString()
-            )
+
+            try {
+                val runnable = Runnable {
+                    if (!mDhizukuService?.tryInstallPackages(
+                            Common.getFilePath(
+                                getFiles(
+                                    download.packageName,
+                                    download.versionCode
+                                )
+                            )
+                        )!!
+                    ) {
+                        removeFromInstallQueue(download.packageName)
+                        postError(
+                            download.packageName,
+                            context.getString(R.string.dialog_cpad_error),
+                            null
+                        )
+                    }
+                }
+                Handler(Looper.getMainLooper()).postDelayed(runnable, 5000)
+            } catch (e: Exception) {
+                removeFromInstallQueue(download.packageName)
+                postError(
+                    download.packageName,
+                    e.localizedMessage,
+                    e.stackTraceToString()
+                )
+            }
+
         }
     }
 
-    fun bindUserService() {
+    private fun tryBindDhizukuService() {
         val args = DhizukuUserServiceArgs(ComponentName(context, DhizukuService::class.java))
         val bind = Dhizuku.bindUserService(args, object : ServiceConnection {
             override fun onServiceConnected(name: ComponentName, iBinder: IBinder) {
-                service = IDhizukuService.Stub.asInterface(iBinder)
+                mDhizukuService = IDhizukuService.Stub.asInterface(iBinder)
             }
 
             override fun onServiceDisconnected(name: ComponentName) {
