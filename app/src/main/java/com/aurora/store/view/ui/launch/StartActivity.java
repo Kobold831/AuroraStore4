@@ -196,10 +196,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                 } catch (JSONException | IOException ignored) {
                 }
             }
-            case Constants.REQUEST_DOWNLOAD_APK ->
-                    new Handler().post(() -> new Updater(this).installApk());
-            default -> {
-            }
+            case Constants.REQUEST_DOWNLOAD_APK -> new Handler().post(() -> new Updater(this).installApk());
         }
     }
 
