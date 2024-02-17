@@ -56,9 +56,7 @@ import com.aurora.store.data.connection.AsyncFileDownload;
 import com.aurora.store.data.connection.Updater;
 import com.aurora.store.data.event.DownloadEventListener;
 import com.aurora.store.data.handler.ProgressHandler;
-import com.aurora.store.data.installer.ShizukuInstaller;
 import com.aurora.store.util.Common;
-import com.aurora.store.util.PackageUtil;
 import com.aurora.store.util.PreferencesKt;
 import com.aurora.store.util.Variables;
 import com.aurora.store.view.epoxy.views.UpdateModeView;
@@ -77,9 +75,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import rikka.shizuku.Shizuku;
-import rikka.sui.Sui;
 
 public class StartActivity extends AppCompatActivity implements DownloadEventListener {
 
@@ -414,9 +409,10 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
         });
 
         new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.dialog_cpad_title_update)
+                .setMessage("アップデートモードを変更するには”設定”を押下してください")
                 .setView(view)
                 .setCancelable(false)
-                .setTitle(R.string.dialog_cpad_title_update)
                 .setPositiveButton(R.string.dialog_cpad_common_yes, (dialog, which) -> {
                     AsyncFileDownload asyncFileDownload = new AsyncFileDownload(this, Variables.DOWNLOAD_FILE_URL, new File(new File(getExternalCacheDir(), "update.apk").getPath()), Constants.REQUEST_DOWNLOAD_APK);
                     asyncFileDownload.execute();
@@ -438,12 +434,12 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                 .setNegativeButton(R.string.dialog_cpad_common_no, (dialog, which) -> finishAffinity())
                 .setNeutralButton(R.string.dialog_cpad_title_settings, (dialog, which) -> {
                     dialog.dismiss();
-                    setUpdateMode(str);
+                    showUpdateMode(str);
                 })
                 .show();
     }
 
-    private void setUpdateMode(String s) {
+    private void showUpdateMode(String s) {
         View v = getLayoutInflater().inflate(R.layout.layout_cpad_update_list, null);
         List<UpdateModeView.AppData> dataList = new ArrayList<>();
         int i = 0;
@@ -475,8 +471,23 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                     }
                 }
                 case 2 -> {
+                    AlertDialog alertDialog = new MaterialAlertDialogBuilder(this).setCancelable(false).setMessage("選択されたモードが機能するか確認しています...").create();
+                    alertDialog.show();
                     if (tryBindDeviceOwnerService()) {
-                        Common.SET_UPDATE_MODE(this, 2);
+                        alertDialog.dismiss();
+                        Common.SET_UPDATE_MODE(this, (int) id);
+                        listView.invalidateViews();
+                    } else {
+                        alertDialog.dismiss();
+                        new MaterialAlertDialogBuilder(this)
+                                .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
+                                .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
+                                .show();
+                    }
+                }
+                case 3 -> {
+                    if (Common.isDhizukuActive(this)) {
+                        Common.SET_UPDATE_MODE(this, (int) id);
                         listView.invalidateViews();
                     } else {
                         new MaterialAlertDialogBuilder(this)

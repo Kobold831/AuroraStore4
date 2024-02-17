@@ -34,6 +34,7 @@ import android.widget.AbsListView;
 import android.widget.ListView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.navigation.Navigation;
 import androidx.preference.Preference;
@@ -120,19 +121,23 @@ public class OtherPreference extends PreferenceFragmentCompat {
                         }
                     }
                     case 2 -> {
+                        AlertDialog alertDialog = new MaterialAlertDialogBuilder(requireActivity()).setCancelable(false).setMessage("選択されたモードが機能するか確認しています...").create();
+                        alertDialog.show();
                         if (tryBindDeviceOwnerService()) {
                             Runnable runnable = () -> {
                                 try {
                                     if (mDeviceOwnerService.isDeviceOwnerApp()) {
-                                        Common.SET_UPDATE_MODE(requireActivity(), 2);
+                                        Common.SET_UPDATE_MODE(requireActivity(), (int) id);
                                         listView.invalidateViews();
                                     } else {
+                                        alertDialog.dismiss();
                                         new MaterialAlertDialogBuilder(requireActivity())
                                                 .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
                                                 .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
                                                 .show();
                                     }
                                 } catch (RemoteException ignored) {
+                                    alertDialog.dismiss();
                                     new MaterialAlertDialogBuilder(requireActivity())
                                             .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
                                             .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
@@ -140,6 +145,18 @@ public class OtherPreference extends PreferenceFragmentCompat {
                                 }
                             };
                             new Handler(Looper.getMainLooper()).postDelayed(runnable, 1000);
+                        } else {
+                            alertDialog.dismiss();
+                            new MaterialAlertDialogBuilder(requireActivity())
+                                    .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
+                                    .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
+                                    .show();
+                        }
+                    }
+                    case 3 -> {
+                        if (Common.isDhizukuActive(requireActivity())) {
+                            Common.SET_UPDATE_MODE(requireActivity(), (int) id);
+                            listView.invalidateViews();
                         } else {
                             new MaterialAlertDialogBuilder(requireActivity())
                                     .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
