@@ -309,7 +309,10 @@ class DownloadWorker @AssistedInject constructor(
         if (status != DownloadStatus.DOWNLOADING) {
             download.apply {
                 this.downloadStatus = status
-                if (download.downloadStatus == DownloadStatus.COMPLETED) this.progress = 100
+                if (download.downloadStatus == DownloadStatus.COMPLETED) {
+                    this.progress = 100
+                    downloadDao.update(download)
+                }
             }
             downloadDao.update(download)
         }

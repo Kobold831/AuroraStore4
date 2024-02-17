@@ -23,16 +23,22 @@ import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
+import com.aurora.store.data.installer.ShizukuInstaller;
 import com.rosan.dhizuku.api.Dhizuku;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import rikka.shizuku.Shizuku;
+import rikka.sui.Sui;
 
 public class Common {
 
@@ -69,12 +75,28 @@ public class Common {
         return false;
     }
 
-    public static List<String> getFilePath(List<File> listFiles) {
+    public static boolean hasShizukuOrSui(Context context) {
+        return PackageUtil.INSTANCE.isInstalled(context, ShizukuInstaller.SHIZUKU_PACKAGE_NAME) || Sui.isSui();
+    }
+
+    public static boolean hasShizukuPerm() {
+        return Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public static List<String> convertToFilePath(List<File> listFiles) {
         List<String> s = new ArrayList<>();
         for (File file : listFiles) {
             Log.e("TAG", file.getPath());
             s.add(file.getPath());
         }
         return s;
+    }
+
+    public static List<Uri> convertToUri(List<File> listFiles) {
+        List<Uri> u = new ArrayList<>();
+        for (File file : listFiles) {
+            u.add(Uri.fromFile(file));
+        }
+        return u;
     }
 }

@@ -56,7 +56,9 @@ import com.aurora.store.data.connection.AsyncFileDownload;
 import com.aurora.store.data.connection.Updater;
 import com.aurora.store.data.event.DownloadEventListener;
 import com.aurora.store.data.handler.ProgressHandler;
+import com.aurora.store.data.installer.ShizukuInstaller;
 import com.aurora.store.util.Common;
+import com.aurora.store.util.PackageUtil;
 import com.aurora.store.util.PreferencesKt;
 import com.aurora.store.util.Variables;
 import com.aurora.store.view.epoxy.views.UpdateModeView;
@@ -75,6 +77,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import rikka.shizuku.Shizuku;
+import rikka.sui.Sui;
 
 public class StartActivity extends AppCompatActivity implements DownloadEventListener {
 
@@ -180,33 +185,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                         cancelLoadingDialog();
                         /* サポートモデルか確認 */
                         if (supportModelCheck()) {
-                            /* AuroraStoreがデバイスオーナーならXInstallerへ、デバイスオーナーではないならバインド試行 */
-                            if (!dpm.isDeviceOwnerApp(getPackageName())) {
-                                /* CPadCustomizeToolへバインドできたらデバイスオーナーか確認、バインドできないならDInstallerへ */
-                                if (tryBindDeviceOwnerService()) {
-                                    new Handler().postDelayed(() -> {
-                                        try {
-                                            /* CPadCustomizeToolがデバイスオーナーならOInstallerへ、デバイスオーナーではないならDInstallerへ */
-                                            if (isODeviceOwner()) {
-                                                OInstaller();
-                                            } else {
-                                                DInstaller();
-                                            }
-                                        } catch (Exception e) {
-                                            new MaterialAlertDialogBuilder(this)
-                                                    .setCancelable(false)
-                                                    .setTitle(R.string.dialog_cpad_title_start_error)
-                                                    .setMessage(getResources().getString(R.string.dialog_cpad_error) + "\n" + e.getMessage())
-                                                    .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> finishAndRemoveTask())
-                                                    .show();
-                                        }
-                                    }, 1000);
-                                } else {
-                                    DInstaller();
-                                }
-                            } else {
-                                XInstaller();
-                            }
+                            setInstaller();
                         } else {
                             supportModelError();
                         }
@@ -270,9 +249,51 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                 .show();
     }
 
+    public void setInstaller() {
+        /* AuroraStoreがデバイスオーナーならXInstallerへ、デバイスオーナーではないならバインド試行 */
+        if (!dpm.isDeviceOwnerApp(getPackageName())) {
+            /* CPadCustomizeToolへバインドできたらデバイスオーナーか確認、バインドできないならDInstallerへ */
+            if (tryBindDeviceOwnerService()) {
+                new Handler().postDelayed(() -> {
+                    try {
+                        /* CPadCustomizeToolがデバイスオーナーならOInstallerへ、デバイスオーナーではないならDInstallerへ */
+                        if (isODeviceOwner()) {
+                            OInstaller();
+                        } else {
+                            if (Common.hasShizukuOrSui(this)) {
+                                if (Common.hasShizukuPerm()) {
+                                    SInstaller();
+                                    return;
+                                }
+                            }
+                            DInstaller();
+                        }
+                    } catch (Exception e) {
+                        new MaterialAlertDialogBuilder(this)
+                                .setCancelable(false)
+                                .setTitle(R.string.dialog_cpad_title_start_error)
+                                .setMessage(getResources().getString(R.string.dialog_cpad_error) + "\n" + e.getMessage())
+                                .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> finishAndRemoveTask())
+                                .show();
+                    }
+                }, 1000);
+            } else {
+                if (Common.hasShizukuOrSui(this)) {
+                    if (Common.hasShizukuPerm()) {
+                        SInstaller();
+                        return;
+                    }
+                }
+                DInstaller();
+            }
+        } else {
+            XInstaller();
+        }
+    }
+
     /* デバイスオーナーインストーラー設定 */
     public void XInstaller() {
-        PreferencesKt.save(getApplicationContext(), PREFERENCE_INSTALLER_ID, 0);
+        PreferencesKt.save(this, PREFERENCE_INSTALLER_ID, 0);
 
         if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
             WarningDialog();
@@ -284,7 +305,19 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
 
     /* DeviceOwnerServiceインストーラー（CPadCustomizeTool）設定 */
     public void OInstaller() {
-        PreferencesKt.save(getApplicationContext(), PREFERENCE_INSTALLER_ID, 0);
+        PreferencesKt.save(this, PREFERENCE_INSTALLER_ID, 1);
+
+        if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
+            WarningDialog();
+        } else {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        }
+    }
+
+    /* Shizukuインストーラー設定 */
+    public void SInstaller() {
+        PreferencesKt.save(this, PREFERENCE_INSTALLER_ID, 2);
 
         if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
             WarningDialog();
@@ -315,7 +348,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                 public void onRequestPermission(int grantResult) {
                     runOnUiThread(() -> {
                         if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                            PreferencesKt.save(getApplicationContext(), PREFERENCE_INSTALLER_ID, 1);
+                            PreferencesKt.save(getApplicationContext(), PREFERENCE_INSTALLER_ID, 3);
 
                             if (Common.GET_SETTINGS_FLAG(getApplicationContext()) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
                                 WarningDialog();
@@ -336,7 +369,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                 }
             });
         } else {
-            PreferencesKt.save(getApplicationContext(), PREFERENCE_INSTALLER_ID, 1);
+            PreferencesKt.save(this, PREFERENCE_INSTALLER_ID, 3);
 
             if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
                 WarningDialog();

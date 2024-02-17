@@ -48,7 +48,7 @@ class DhizukuInstaller(context: Context) : InstallerBase(context) {
             try {
                 val runnable = Runnable {
                     if (!mDhizukuService?.tryInstallPackages(
-                            Common.getFilePath(
+                            Common.convertToFilePath(
                                 getFiles(
                                     download.packageName,
                                     download.versionCode

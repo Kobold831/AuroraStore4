@@ -127,12 +127,20 @@ class InstallerFragment : BaseFragment(R.layout.fragment_onboarding_installer) {
 
     private fun save(installerId: Int) {
         when (installerId) {
-            /* セッションインストーラー（デバイスオーナーまたはCPadCustomizeTool） */
+            /* セッションインストーラー（デバイスオーナー） */
             0 -> {
                 //セーブさせない
             }
-            /* Dhizukuインストーラー */
+            /* CPadCustomizeToolインストーラー */
             1 -> {
+                //セーブさせない
+            }
+            /* Shizukuインストーラー */
+            2 -> {
+                //セーブさせない
+            }
+            /* Dhizukuインストーラー */
+            3 -> {
                 //セーブさせない
             }
         }

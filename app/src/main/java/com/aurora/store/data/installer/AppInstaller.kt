@@ -91,19 +91,20 @@ class AppInstaller @Inject constructor(@ApplicationContext private val context: 
         }
 
         return when (prefValue) {
-            /* セッションインストーラー（デバイスオーナーまたはCPadCustomizeTool） */
+            /* セッションインストーラー（デバイスオーナー） */
             0 -> {
                 val installer = SessionInstaller(context)
                 choiceAndInstaller[prefValue] = installer
                 installer
             }
-            /* Dhizukuインストーラー */
+            /* CPadCustomizeToolインストーラー */
             1 -> {
-                val installer = DhizukuInstaller(context)
+                val installer = DelegationInstaller(context)
                 choiceAndInstaller[prefValue] = installer
                 installer
             }
-            else -> {
+            /* Shizukuインストーラー */
+            2 -> {
                 if (isOAndAbove()) {
                     val installer = if (hasShizukuOrSui(context) && hasShizukuPerm()) {
                         ShizukuInstaller(context)
@@ -115,6 +116,16 @@ class AppInstaller @Inject constructor(@ApplicationContext private val context: 
                 } else {
                     SessionInstaller(context)
                 }
+            }
+            /* Dhizukuインストーラー */
+            3 -> {
+                val installer = DhizukuInstaller(context)
+                choiceAndInstaller[prefValue] = installer
+                installer
+            }
+
+            else -> {
+                return choiceAndInstaller[prefValue]!!
             }
         }
     }

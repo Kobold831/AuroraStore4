@@ -112,6 +112,8 @@
 
     <string-array name="pref_installation_method">
         <item>@string/pref_install_mode_session</item>
+        <item>"CPadCustomizeToolインストーラー"</item>
+        <item>"Shizukuインストーラー"</item>
         <item>@string/pref_install_mode_dhizuku</item>
     </string-array>
 
@@ -130,6 +132,8 @@
     <string-array name="pref_installation_method_values">
         <item>0</item>
         <item>1</item>
+        <item>2</item>
+        <item>3</item>
     </string-array>
 
     <string-array name="link_urls">

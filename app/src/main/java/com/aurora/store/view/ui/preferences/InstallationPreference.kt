@@ -47,28 +47,6 @@ import rikka.sui.Sui
 @AndroidEntryPoint
 class InstallationPreference : PreferenceFragmentCompat() {
 
-    private var shizukuAlive = Sui.isSui()
-    private val shizukuAliveListener = Shizuku.OnBinderReceivedListener {
-        Log.d("ShizukuInstaller Alive!")
-        shizukuAlive = true
-    }
-    private val shizukuDeadListener = Shizuku.OnBinderDeadListener {
-        Log.d("ShizukuInstaller Dead!")
-        shizukuAlive = false
-    }
-    private val shizukuResultListener =
-        Shizuku.OnRequestPermissionResultListener { _: Int, result: Int ->
-            if (result == PackageManager.PERMISSION_GRANTED) {
-                save(Preferences.PREFERENCE_INSTALLER_ID, 5)
-                activity?.recreate()
-            } else {
-                showDialog(
-                    R.string.action_installations,
-                    R.string.installer_shizuku_unavailable
-                )
-            }
-        }
-
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences_installation, rootKey)
     }
@@ -90,12 +68,6 @@ class InstallationPreference : PreferenceFragmentCompat() {
         view.findViewById<Toolbar>(R.id.toolbar)?.apply {
             title = getString(R.string.title_installation)
             setNavigationOnClickListener { findNavController().navigateUp() }
-        }
-
-        if (AppInstaller.hasShizukuOrSui(requireContext()) && isOAndAbove()) {
-            Shizuku.addBinderReceivedListenerSticky(shizukuAliveListener)
-            Shizuku.addBinderDeadListener(shizukuDeadListener)
-            Shizuku.addRequestPermissionResultListener(shizukuResultListener)
         }
 
         val abandonPreference: Preference? =
@@ -120,14 +92,28 @@ class InstallationPreference : PreferenceFragmentCompat() {
                 Preference.OnPreferenceChangeListener { _, newValue ->
                     val selectedId = Integer.parseInt(newValue as String)
                     when (selectedId) {
-                        /* セッションインストーラー（デバイスオーナーまたはCPadCustomizeTool） */
+                        /* セッションインストーラー（デバイスオーナー） */
                         0 -> {
-                            //選択させない
+                            //セーブさせない
+                            false
+                        }
+                        /* CPadCustomizeToolインストーラー */
+                        1 -> {
+                            //セーブさせない
+                            false
+                        }
+                        /* Shizukuインストーラー */
+                        2 -> {
+                            //セーブさせない
                             false
                         }
                         /* Dhizukuインストーラー */
+                        3 -> {
+                            //セーブさせない
+                            false
+                        }
+
                         else -> {
-                            //選択させない
                             false
                         }
                     }

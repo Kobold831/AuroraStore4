@@ -516,6 +516,10 @@ class AppDetailsFragment : BaseFragment(R.layout.fragment_details) {
                 toast("Already downloading")
             }
 
+            DownloadStatus.COMPLETED -> {
+                binding.layoutDetailsInstall.btnDownload.setText(getString(R.string.action_installing))
+            }
+
             else -> {
                 flip(1)
                 purchase()
@@ -609,6 +613,10 @@ class AppDetailsFragment : BaseFragment(R.layout.fragment_details) {
                         btn.setText(R.string.action_install)
                     } else {
                         btn.setText(app.price)
+                    }
+
+                    if (downloadStatus == DownloadStatus.COMPLETED) {
+                        btn.setText(getString(R.string.action_installing))
                     }
 
                     btn.addOnClickListener {
