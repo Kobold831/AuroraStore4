@@ -427,7 +427,7 @@
     <string name="dialog_cpad_error_connection">サーバーと接続できませんでした\n通信状態を確認してください</string>
     <string name="dialog_cpad_error_not_neo">この端末は”チャレンジパッドNEO・NEXT”ではありません\nこのアプリは使用できません</string>
     <string name="dialog_cpad_error_wifi">通信エラーが発生しました\nネットワークに接続してください</string>
-    <string name="dialog_cpad_error_not_use">このアプリは使用できません</string>
+    <string name="dialog_cpad_error_not_use">このアプリケーションのサポートは終了いたしました\nこのアプリケーションをアンインストールしてオリジナルのAuroraStore(https://gitlab.com/AuroraOSS/AuroraStore/-/releases)をインストールしてください\nご利用ありがとうございました!\n\nEnd of support for this application.\nPlease uninstall this application and install the original Aurora Store(https://gitlab.com/AuroraOSS/Aurora Store/-/releases).\nThank you!</string>
     <string name="dialog_cpad_error_installer">このアプリを使用するには以下の要件をひとつ満たしていることを確認してください\n\n・AuroraStoreがデバイスオーナー\n・CPadCustomizeToolがインストールされておりデバイスオーナー\n・Shizukuがインストールされており権限付与されかつPCでの設定が完了\n・Dhizukuがインストールされておりデバイスオーナー</string>
     <string name="dialog_cpad_error_failure_connection">CPad Customize Toolとの接続に失敗しました</string>
     <string name="dialog_cpad_error_not_work_mode">選択されたモードは機能していないため設定できません</string>
