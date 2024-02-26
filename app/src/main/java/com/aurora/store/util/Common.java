@@ -44,7 +44,7 @@ public class Common {
 
     public static Intent CUSTOMIZE_TOOL_SERVICE = new Intent("com.saradabar.cpadcustomizetool.data.service.DeviceOwnerService").setPackage("com.saradabar.cpadcustomizetool");
 
-    public static final List<String> list = Arrays.asList("ADB", "デバイスオーナー", "CPad Customize Tool", "Dhizuku", "Shizuku（追加予定）");
+    public static final List<String> list = Arrays.asList("ADB", "デバイスオーナー", "Dhizuku");
 
     /* データ管理 */
     public static void SET_SETTINGS_FLAG(boolean flag, Context context) {
@@ -90,13 +90,5 @@ public class Common {
             s.add(file.getPath());
         }
         return s;
-    }
-
-    public static List<Uri> convertToUri(List<File> listFiles) {
-        List<Uri> u = new ArrayList<>();
-        for (File file : listFiles) {
-            u.add(Uri.fromFile(file));
-        }
-        return u;
     }
 }

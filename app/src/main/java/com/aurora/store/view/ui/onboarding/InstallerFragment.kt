@@ -131,16 +131,12 @@ class InstallerFragment : BaseFragment(R.layout.fragment_onboarding_installer) {
             0 -> {
                 //セーブさせない
             }
-            /* CPadCustomizeToolインストーラー */
+            /* Shizukuインストーラー */
             1 -> {
                 //セーブさせない
             }
-            /* Shizukuインストーラー */
-            2 -> {
-                //セーブさせない
-            }
             /* Dhizukuインストーラー */
-            3 -> {
+            2 -> {
                 //セーブさせない
             }
         }

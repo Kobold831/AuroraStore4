@@ -20,21 +20,14 @@
 package com.aurora.store.view.ui.preferences;
 
 import android.app.admin.DevicePolicyManager;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.ServiceConnection;
 import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Looper;
-import android.os.RemoteException;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.ListView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.navigation.Navigation;
 import androidx.preference.Preference;
@@ -44,14 +37,12 @@ import com.aurora.store.R;
 import com.aurora.store.util.Common;
 import com.aurora.store.view.epoxy.views.UpdateModeView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.saradabar.cpadcustomizetool.data.service.IDeviceOwnerService;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class OtherPreference extends PreferenceFragmentCompat {
 
-    IDeviceOwnerService mDeviceOwnerService;
     private DevicePolicyManager mDevicePolicyManager;
 
     Preference preferenceDisableOwner,
@@ -121,40 +112,6 @@ public class OtherPreference extends PreferenceFragmentCompat {
                         }
                     }
                     case 2 -> {
-                        AlertDialog alertDialog = new MaterialAlertDialogBuilder(requireActivity()).setCancelable(false).setMessage("選択されたモードが機能するか確認しています...").create();
-                        alertDialog.show();
-                        if (tryBindDeviceOwnerService()) {
-                            Runnable runnable = () -> {
-                                try {
-                                    if (mDeviceOwnerService.isDeviceOwnerApp()) {
-                                        alertDialog.dismiss();
-                                        Common.SET_UPDATE_MODE(requireActivity(), (int) id);
-                                        listView.invalidateViews();
-                                    } else {
-                                        alertDialog.dismiss();
-                                        new MaterialAlertDialogBuilder(requireActivity())
-                                                .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
-                                                .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
-                                                .show();
-                                    }
-                                } catch (RemoteException ignored) {
-                                    alertDialog.dismiss();
-                                    new MaterialAlertDialogBuilder(requireActivity())
-                                            .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
-                                            .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
-                                            .show();
-                                }
-                            };
-                            new Handler(Looper.getMainLooper()).postDelayed(runnable, 1000);
-                        } else {
-                            alertDialog.dismiss();
-                            new MaterialAlertDialogBuilder(requireActivity())
-                                    .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
-                                    .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
-                                    .show();
-                        }
-                    }
-                    case 3 -> {
                         if (Common.isDhizukuActive(requireActivity())) {
                             Common.SET_UPDATE_MODE(requireActivity(), (int) id);
                             listView.invalidateViews();
@@ -184,26 +141,6 @@ public class OtherPreference extends PreferenceFragmentCompat {
             preferenceDisableOwner.setSelectable(false);
         }
     }
-
-    ServiceConnection mDeviceOwnerServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            mDeviceOwnerService = IDeviceOwnerService.Stub.asInterface(iBinder);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-        }
-    };
-
-    public boolean tryBindDeviceOwnerService() {
-        try {
-            return requireActivity().bindService(Common.CUSTOMIZE_TOOL_SERVICE, mDeviceOwnerServiceConnection, Context.BIND_AUTO_CREATE);
-        } catch (Exception ignored) {
-            return false;
-        }
-    }
-
 
     private String getNowOwnerPackage() {
         for (ApplicationInfo app : requireActivity().getPackageManager().getInstalledApplications(0)) {

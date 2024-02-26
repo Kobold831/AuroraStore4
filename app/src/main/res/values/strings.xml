@@ -428,13 +428,13 @@
     <string name="dialog_cpad_error_not_neo">この端末は”チャレンジパッドNEO・NEXT”ではありません\nこのアプリは使用できません</string>
     <string name="dialog_cpad_error_wifi">通信エラーが発生しました\nネットワークに接続してください</string>
     <string name="dialog_cpad_error_not_use">このアプリケーションのサポートは終了いたしました\nこのアプリケーションをアンインストールしてオリジナルのAuroraStore(https://gitlab.com/AuroraOSS/AuroraStore/-/releases)をインストールしてください\nご利用ありがとうございました!\n\nEnd of support for this application.\nPlease uninstall this application and install the original Aurora Store(https://gitlab.com/AuroraOSS/Aurora Store/-/releases).\nThank you!</string>
-    <string name="dialog_cpad_error_installer">このアプリを使用するには以下の要件をひとつ満たしていることを確認してください\n\n・AuroraStoreがデバイスオーナー\n・CPadCustomizeToolがインストールされておりデバイスオーナー\n・Shizukuがインストールされており権限付与されかつPCでの設定が完了\n・Dhizukuがインストールされておりデバイスオーナー</string>
+    <string name="dialog_cpad_error_installer">このアプリを使用するには以下の要件をひとつ満たしていることを確認してください\n\n・Aurora Storeがデバイスオーナー\n・Shizukuがインストールされており権限付与されかつPCでの設定が完了\n・Dhizukuがインストールされておりデバイスオーナー</string>
     <string name="dialog_cpad_error_failure_connection">CPad Customize Toolとの接続に失敗しました</string>
     <string name="dialog_cpad_error_not_work_mode">選択されたモードは機能していないため設定できません</string>
     <string name="dialog_cpad_error_reset_update_mode">デバイスオーナーではありません\nアップデートモードをリセットしました</string>
     <string name="dialog_cpad_clear_device_owner">デバイスオーナーを解除しますか？</string>
     <string name="dialog_cpad_agree">同意する / Agree</string>
-    <string name="dialog_cpad_disagree">同意しない / disagree</string>
+    <string name="dialog_cpad_disagree">同意しない / Disagree</string>
     <string name="dialog_cpad_notice_start">このアプリケーションを使用するために\"同意する\"を押すと、<a href="">N/A</a>の使用許諾契約に同意したことになります。\nこのアプリケーションを通じて生じた損害や損失について、開発者は一切の責任を負いませんのでご了承ください。\nWhen you press \"Agree\" to use this application, you agree to <a href="">N/A</a> license agreement.\nPlease note that developer do not take any responsibility or liability for any damage or loss caused through this application.</string>
     <string name="dialog_cpad_update_caution">遷移先のページより新しいバージョンのapkファイルをダウンロードしてadbでインストールしてください</string>
 

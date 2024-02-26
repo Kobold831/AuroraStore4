@@ -97,18 +97,13 @@ class InstallationPreference : PreferenceFragmentCompat() {
                             //セーブさせない
                             false
                         }
-                        /* CPadCustomizeToolインストーラー */
+                        /* Shizukuインストーラー */
                         1 -> {
                             //セーブさせない
                             false
                         }
-                        /* Shizukuインストーラー */
-                        2 -> {
-                            //セーブさせない
-                            false
-                        }
                         /* Dhizukuインストーラー */
-                        3 -> {
+                        2 -> {
                             //セーブさせない
                             false
                         }

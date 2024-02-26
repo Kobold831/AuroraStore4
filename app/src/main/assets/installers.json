@@ -2,23 +2,17 @@
   {
     "id": "0",
     "title": "セッションインストーラ",
-    "subtitle": "デバイスオーナーまたはCPadCustomizeToolを使用してインストール",
-    "description": "デバイスオーナーがAurora StoreまたはCPadCustomizeToolに設定されていることを確認してください"
+    "subtitle": "デバイスオーナーを使用してインストール",
+    "description": "デバイスオーナーがAurora Storeに設定されていることを確認してください"
   },
   {
     "id": "1",
-    "title": "CPadCustomizeToolインストーラー",
-    "subtitle": "CPadCustomizeToolを使用してインストール",
-    "description": "CPadCustomizeToolがデバイスにインストールされておりデバイスオーナーが設定されていることを確認してください"
-  },
-  {
-    "id": "2",
     "title": "Shizukuインストーラ",
     "subtitle": "Shizukuを使用してインストール",
     "description": "Shizukuがデバイスにインストールされており実行されていることを確認してください"
   },
   {
-    "id": "3",
+    "id": "2",
     "title": "Dhizukuインストーラ",
     "subtitle": "Dhizukuを使用してインストール",
     "description": "Dhizukuがデバイスにインストールされておりデバイスオーナーが設定され権限が承認されていることを確認してください"

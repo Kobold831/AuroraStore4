@@ -24,11 +24,9 @@ import static com.aurora.store.util.Preferences.PREFERENCE_INSTALLER_ID;
 import android.app.ProgressDialog;
 import android.app.admin.DevicePolicyManager;
 import android.content.ActivityNotFoundException;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -36,9 +34,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
-import android.os.Looper;
-import android.os.RemoteException;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.widget.AbsListView;
@@ -64,7 +59,6 @@ import com.aurora.store.view.epoxy.views.UpdateModeView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.rosan.dhizuku.api.Dhizuku;
 import com.rosan.dhizuku.api.DhizukuRequestPermissionListener;
-import com.saradabar.cpadcustomizetool.data.service.IDeviceOwnerService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -79,7 +73,6 @@ import java.util.Objects;
 
 public class StartActivity extends AppCompatActivity implements DownloadEventListener {
 
-    IDeviceOwnerService mDeviceOwnerService;
     DevicePolicyManager dpm;
     ProgressDialog loadingDialog;
 
@@ -244,49 +237,24 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
 
     public void setInstaller() {
         /* AuroraStoreがデバイスオーナーならXInstallerへ、デバイスオーナーではないならバインド試行 */
-        if (!dpm.isDeviceOwnerApp(getPackageName())) {
-            /* CPadCustomizeToolへバインドできたらデバイスオーナーか確認、バインドできないならDInstallerへ */
-            if (tryBindDeviceOwnerService()) {
-                new Handler().postDelayed(() -> {
-                    try {
-                        /* CPadCustomizeToolがデバイスオーナーならOInstallerへ、デバイスオーナーではないならDInstallerへ */
-                        if (isODeviceOwner()) {
-                            OInstaller();
-                        } else {
-                            try {
-                                if (Common.hasShizukuOrSui(this)) {
-                                    if (Common.hasShizukuPerm()) {
-                                        SInstaller();
-                                        return;
-                                    }
-                                }
-                            } catch (Exception e) {
-                                DInstaller();
-                                return;
-                            }
-                            DInstaller();
-                        }
-                    } catch (Exception e) {
-                        new MaterialAlertDialogBuilder(this)
-                                .setCancelable(false)
-                                .setTitle(R.string.dialog_cpad_title_start_error)
-                                .setMessage(getResources().getString(R.string.dialog_cpad_error) + "\n" + e.getMessage())
-                                .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> finishAndRemoveTask())
-                                .show();
-                    }
-                }, 1000);
-            } else {
-                if (Common.hasShizukuOrSui(this)) {
-                    if (Common.hasShizukuPerm()) {
-                        SInstaller();
-                        return;
-                    }
-                }
-                DInstaller();
-            }
-        } else {
+        if (dpm.isDeviceOwnerApp(getPackageName())) {
             XInstaller();
+            return;
         }
+
+        try {
+            if (Common.hasShizukuOrSui(this)) {
+                if (Common.hasShizukuPerm()) {
+                    SInstaller();
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            DInstaller();
+            return;
+        }
+
+        DInstaller();
     }
 
     /* デバイスオーナーインストーラー設定 */
@@ -301,21 +269,9 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
         }
     }
 
-    /* DeviceOwnerServiceインストーラー（CPadCustomizeTool）設定 */
-    public void OInstaller() {
-        PreferencesKt.save(this, PREFERENCE_INSTALLER_ID, 1);
-
-        if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
-            WarningDialog();
-        } else {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-        }
-    }
-
     /* Shizukuインストーラー設定 */
     public void SInstaller() {
-        PreferencesKt.save(this, PREFERENCE_INSTALLER_ID, 2);
+        PreferencesKt.save(this, PREFERENCE_INSTALLER_ID, 1);
 
         if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
             WarningDialog();
@@ -346,7 +302,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                 public void onRequestPermission(int grantResult) {
                     runOnUiThread(() -> {
                         if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                            PreferencesKt.save(getApplicationContext(), PREFERENCE_INSTALLER_ID, 3);
+                            PreferencesKt.save(getApplicationContext(), PREFERENCE_INSTALLER_ID, 2);
 
                             if (Common.GET_SETTINGS_FLAG(getApplicationContext()) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
                                 WarningDialog();
@@ -367,7 +323,7 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                 }
             });
         } else {
-            PreferencesKt.save(this, PREFERENCE_INSTALLER_ID, 3);
+            PreferencesKt.save(this, PREFERENCE_INSTALLER_ID, 2);
 
             if (Common.GET_SETTINGS_FLAG(this) == Constants.CPAD_SETTINGS_NOT_COMPLETED) {
                 WarningDialog();
@@ -376,30 +332,6 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                 finish();
             }
         }
-    }
-
-    ServiceConnection mDeviceOwnerServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            mDeviceOwnerService = IDeviceOwnerService.Stub.asInterface(iBinder);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-        }
-    };
-
-    public boolean tryBindDeviceOwnerService() {
-        try {
-            return bindService(Common.CUSTOMIZE_TOOL_SERVICE, mDeviceOwnerServiceConnection, Context.BIND_AUTO_CREATE);
-        } catch (Exception ignored) {
-            return false;
-        }
-    }
-
-    /* CPadCustomizeToolがデバイスオーナーかどうか */
-    public boolean isODeviceOwner() throws RemoteException {
-        return mDeviceOwnerService.isDeviceOwnerApp();
     }
 
     private void showUpdateDialog(String str) {
@@ -477,40 +409,6 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                     }
                 }
                 case 2 -> {
-                    AlertDialog alertDialog = new MaterialAlertDialogBuilder(this).setCancelable(false).setMessage("選択されたモードが機能するか確認しています...").create();
-                    alertDialog.show();
-                    if (tryBindDeviceOwnerService()) {
-                        Runnable runnable = () -> {
-                            try {
-                                if (mDeviceOwnerService.isDeviceOwnerApp()) {
-                                    alertDialog.dismiss();
-                                    Common.SET_UPDATE_MODE(this, (int) id);
-                                    listView.invalidateViews();
-                                } else {
-                                    alertDialog.dismiss();
-                                    new MaterialAlertDialogBuilder(this)
-                                            .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
-                                            .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
-                                            .show();
-                                }
-                            } catch (RemoteException ignored) {
-                                alertDialog.dismiss();
-                                new MaterialAlertDialogBuilder(this)
-                                        .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
-                                        .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
-                                        .show();
-                            }
-                        };
-                        new Handler(Looper.getMainLooper()).postDelayed(runnable, 1000);
-                    } else {
-                        alertDialog.dismiss();
-                        new MaterialAlertDialogBuilder(this)
-                                .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
-                                .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
-                                .show();
-                    }
-                }
-                case 3 -> {
                     if (!Dhizuku.init(this)) {
                         new MaterialAlertDialogBuilder(this)
                                 .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
@@ -665,11 +563,5 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
         if (requestCode == Constants.REQUEST_UPDATE) {
             finishAndRemoveTask();
         }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (mDeviceOwnerService != null) unbindService(mDeviceOwnerServiceConnection);
     }
 }

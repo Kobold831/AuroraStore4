@@ -44,7 +44,6 @@ import com.aurora.store.data.service.IDhizukuService;
 import com.aurora.store.util.Common;
 import com.rosan.dhizuku.api.Dhizuku;
 import com.rosan.dhizuku.api.DhizukuUserServiceArgs;
-import com.saradabar.cpadcustomizetool.data.service.IDeviceOwnerService;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -55,7 +54,6 @@ import java.util.Collections;
 
 public class Updater {
 
-    IDeviceOwnerService mDeviceOwnerService;
     IDhizukuService mDhizukuService;
     Activity activity;
 
@@ -100,18 +98,6 @@ public class Updater {
                 }
             }
             case 2 -> {
-                if (tryBindDeviceOwnerService()) {
-                    oInstall();
-                } else {
-                    Common.SET_UPDATE_MODE(activity, 0);
-                    new AlertDialog.Builder(activity)
-                            .setCancelable(false)
-                            .setMessage(R.string.dialog_cpad_error + "\nアップデートモードをリセットしました")
-                            .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
-                            .show();
-                }
-            }
-            case 3 -> {
                 if (tryBindDhizukuService(activity)) {
                     dInstall();
                 } else {
@@ -123,25 +109,6 @@ public class Updater {
                             .show();
                 }
             }
-        }
-    }
-
-    ServiceConnection mDeviceOwnerServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            mDeviceOwnerService = IDeviceOwnerService.Stub.asInterface(iBinder);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-        }
-    };
-
-    public boolean tryBindDeviceOwnerService() {
-        try {
-            return activity.bindService(Common.CUSTOMIZE_TOOL_SERVICE, mDeviceOwnerServiceConnection, Context.BIND_AUTO_CREATE);
-        } catch (Exception ignored) {
-            return false;
         }
     }
 
@@ -168,29 +135,6 @@ public class Updater {
                     .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
                     .show();
         }
-    }
-
-    private void oInstall() {
-        Runnable runnable = () -> {
-            try {
-                if (!mDeviceOwnerService.tryInstallPackages("", Collections.singletonList(Uri.parse(Uri.fromFile(new File(activity.getExternalCacheDir(), "update.apk")).getPath())))) {
-                    Common.SET_UPDATE_MODE(activity, 0);
-                    new AlertDialog.Builder(activity)
-                            .setCancelable(false)
-                            .setMessage(R.string.dialog_cpad_error + "\nアップデートモードをリセットしました")
-                            .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
-                            .show();
-                }
-            } catch (Exception ignored) {
-                Common.SET_UPDATE_MODE(activity, 0);
-                new AlertDialog.Builder(activity)
-                        .setCancelable(false)
-                        .setMessage(R.string.dialog_cpad_error + "\nアップデートモードをリセットしました")
-                        .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
-                        .show();
-            }
-        };
-        new Handler().postDelayed(runnable, 1000);
     }
 
     private void dInstall() {
