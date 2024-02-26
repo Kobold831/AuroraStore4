@@ -1,3 +1,9 @@
+# 重要なお知らせ
+
+**このアプリケーションはまもなくサポートを終了します。公式Aurora Storeの対応がされ次第、リポジトリをアーカイブしてサポートを終了させていただきますのでご了承ください。**
+**サポートが終了した場合はお手数をおかけいたしますが、このアプリケーションをアンインストールして、オリジナルの[Aurora Store](https://gitlab.com/AuroraOSS/AuroraStore/-/releases)をインストールしてください。**
+**ご利用ありがとうございました！**
+
 # Aurora Store
 
 **Aurora Store** is an unofficial, FOSS client to Google Play with bare minimum features. Aurora Store

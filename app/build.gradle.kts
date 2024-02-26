@@ -44,8 +44,8 @@ android {
         //noinspection ExpiredTargetSdkVersion
         targetSdk = 22
 
-        versionCode = 11
-        versionName = "441.0.0"
+        versionCode = 12
+        versionName = "441.0.1"
     }
 
     buildTypes {

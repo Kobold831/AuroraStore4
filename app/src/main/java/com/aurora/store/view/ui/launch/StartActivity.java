@@ -252,11 +252,16 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                         if (isODeviceOwner()) {
                             OInstaller();
                         } else {
-                            if (Common.hasShizukuOrSui(this)) {
-                                if (Common.hasShizukuPerm()) {
-                                    SInstaller();
-                                    return;
+                            try {
+                                if (Common.hasShizukuOrSui(this)) {
+                                    if (Common.hasShizukuPerm()) {
+                                        SInstaller();
+                                        return;
+                                    }
                                 }
+                            } catch (Exception e) {
+                                DInstaller();
+                                return;
                             }
                             DInstaller();
                         }
