@@ -83,9 +83,10 @@ public class Updater {
                     try {
                         xInstall();
                     } catch (IOException ignored) {
+                        Common.SET_UPDATE_MODE(activity, 0);
                         new AlertDialog.Builder(activity)
                                 .setCancelable(false)
-                                .setMessage(R.string.dialog_cpad_error)
+                                .setMessage(R.string.dialog_cpad_error + "\nアップデートモードをリセットしました")
                                 .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
                                 .show();
                     }
@@ -102,9 +103,10 @@ public class Updater {
                 if (tryBindDeviceOwnerService()) {
                     oInstall();
                 } else {
+                    Common.SET_UPDATE_MODE(activity, 0);
                     new AlertDialog.Builder(activity)
                             .setCancelable(false)
-                            .setMessage(R.string.dialog_cpad_error)
+                            .setMessage(R.string.dialog_cpad_error + "\nアップデートモードをリセットしました")
                             .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
                             .show();
                 }
@@ -113,9 +115,10 @@ public class Updater {
                 if (tryBindDhizukuService(activity)) {
                     dInstall();
                 } else {
+                    Common.SET_UPDATE_MODE(activity, 0);
                     new AlertDialog.Builder(activity)
                             .setCancelable(false)
-                            .setMessage(R.string.dialog_cpad_error)
+                            .setMessage(R.string.dialog_cpad_error + "\nアップデートモードをリセットしました")
                             .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
                             .show();
                 }
@@ -158,9 +161,10 @@ public class Updater {
 
     private void xInstall() throws IOException {
         if (!trySessionInstall()) {
+            Common.SET_UPDATE_MODE(activity, 0);
             new AlertDialog.Builder(activity)
                     .setCancelable(false)
-                    .setMessage(R.string.dialog_cpad_error)
+                    .setMessage(R.string.dialog_cpad_error + "\nアップデートモードをリセットしました")
                     .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
                     .show();
         }
@@ -170,16 +174,18 @@ public class Updater {
         Runnable runnable = () -> {
             try {
                 if (!mDeviceOwnerService.tryInstallPackages("", Collections.singletonList(Uri.parse(Uri.fromFile(new File(activity.getExternalCacheDir(), "update.apk")).getPath())))) {
+                    Common.SET_UPDATE_MODE(activity, 0);
                     new AlertDialog.Builder(activity)
                             .setCancelable(false)
-                            .setMessage(R.string.dialog_cpad_error)
+                            .setMessage(R.string.dialog_cpad_error + "\nアップデートモードをリセットしました")
                             .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
                             .show();
                 }
-            } catch (RemoteException ignored) {
+            } catch (Exception ignored) {
+                Common.SET_UPDATE_MODE(activity, 0);
                 new AlertDialog.Builder(activity)
                         .setCancelable(false)
-                        .setMessage(R.string.dialog_cpad_error)
+                        .setMessage(R.string.dialog_cpad_error + "\nアップデートモードをリセットしました")
                         .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
                         .show();
             }
@@ -191,16 +197,18 @@ public class Updater {
         Runnable runnable = () -> {
             try {
                 if (!mDhizukuService.tryInstallPackages(Collections.singletonList(new File(activity.getExternalCacheDir(), "update.apk").getPath()))) {
+                    Common.SET_UPDATE_MODE(activity, 0);
                     new AlertDialog.Builder(activity)
                             .setCancelable(false)
-                            .setMessage(R.string.dialog_cpad_error)
+                            .setMessage(R.string.dialog_cpad_error + "\nアップデートモードをリセットしました")
                             .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
                             .show();
                 }
             } catch (RemoteException ignored) {
+                Common.SET_UPDATE_MODE(activity, 0);
                 new AlertDialog.Builder(activity)
                         .setCancelable(false)
-                        .setMessage(R.string.dialog_cpad_error)
+                        .setMessage(R.string.dialog_cpad_error + "\nアップデートモードをリセットしました")
                         .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> activity.finishAffinity())
                         .show();
             }

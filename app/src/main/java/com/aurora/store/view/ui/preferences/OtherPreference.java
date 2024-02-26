@@ -127,6 +127,7 @@ public class OtherPreference extends PreferenceFragmentCompat {
                             Runnable runnable = () -> {
                                 try {
                                     if (mDeviceOwnerService.isDeviceOwnerApp()) {
+                                        alertDialog.dismiss();
                                         Common.SET_UPDATE_MODE(requireActivity(), (int) id);
                                         listView.invalidateViews();
                                     } else {

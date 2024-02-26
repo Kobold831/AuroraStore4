@@ -37,6 +37,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
@@ -479,9 +480,28 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                     AlertDialog alertDialog = new MaterialAlertDialogBuilder(this).setCancelable(false).setMessage("選択されたモードが機能するか確認しています...").create();
                     alertDialog.show();
                     if (tryBindDeviceOwnerService()) {
-                        alertDialog.dismiss();
-                        Common.SET_UPDATE_MODE(this, (int) id);
-                        listView.invalidateViews();
+                        Runnable runnable = () -> {
+                            try {
+                                if (mDeviceOwnerService.isDeviceOwnerApp()) {
+                                    alertDialog.dismiss();
+                                    Common.SET_UPDATE_MODE(this, (int) id);
+                                    listView.invalidateViews();
+                                } else {
+                                    alertDialog.dismiss();
+                                    new MaterialAlertDialogBuilder(this)
+                                            .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
+                                            .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
+                                            .show();
+                                }
+                            } catch (RemoteException ignored) {
+                                alertDialog.dismiss();
+                                new MaterialAlertDialogBuilder(this)
+                                        .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
+                                        .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
+                                        .show();
+                            }
+                        };
+                        new Handler(Looper.getMainLooper()).postDelayed(runnable, 1000);
                     } else {
                         alertDialog.dismiss();
                         new MaterialAlertDialogBuilder(this)
@@ -491,18 +511,48 @@ public class StartActivity extends AppCompatActivity implements DownloadEventLis
                     }
                 }
                 case 3 -> {
-                    if (Common.isDhizukuActive(this)) {
-                        Common.SET_UPDATE_MODE(this, (int) id);
-                        listView.invalidateViews();
-                    } else {
+                    if (!Dhizuku.init(this)) {
                         new MaterialAlertDialogBuilder(this)
                                 .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
                                 .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
                                 .show();
+                        return;
+                    }
+
+                    if (!Dhizuku.isPermissionGranted()) {
+                        Dhizuku.requestPermission(new DhizukuRequestPermissionListener() {
+                            @Override
+                            public void onRequestPermission(int grantResult) {
+                                runOnUiThread(() -> {
+                                    if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                                        Common.SET_UPDATE_MODE(StartActivity.this, (int) id);
+                                        listView.invalidateViews();
+                                        return;
+                                    } else {
+                                        new MaterialAlertDialogBuilder(StartActivity.this)
+                                                .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
+                                                .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
+                                                .show();
+                                        return;
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        if (Common.isDhizukuActive(this)) {
+                            Common.SET_UPDATE_MODE(this, (int) id);
+                            listView.invalidateViews();
+                        } else {
+                            new MaterialAlertDialogBuilder(this)
+                                    .setMessage(getString(R.string.dialog_cpad_error_not_work_mode))
+                                    .setPositiveButton(R.string.dialog_cpad_common_ok, (dialog, which) -> dialog.dismiss())
+                                    .show();
+                        }
                     }
                 }
             }
         });
+
         new MaterialAlertDialogBuilder(this)
                 .setView(v)
                 .setCancelable(false)

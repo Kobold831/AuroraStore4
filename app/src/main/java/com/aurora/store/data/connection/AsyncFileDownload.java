@@ -118,6 +118,6 @@ public class AsyncFileDownload extends AsyncTask<String, Void, Boolean> {
 
 	public int getLoadedBytePercent() {
 		if (totalByte <= 0) return 0;
-		return (int) Math.floor(100 * currentByte / totalByte);
+		return (int) Math.floor((double) (100 * currentByte) / totalByte);
 	}
 }
