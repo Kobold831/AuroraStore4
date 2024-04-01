@@ -1,0 +1,44 @@
+[
+  {
+    "id": "0",
+    "title": "よくある質問",
+    "subtitle": "ご質問がある場合はよくある質問から回答を検索できます",
+    "icon": "ic_faq",
+    "url": "https://gitlab.com/AuroraOSS/AuroraStore/-/wikis/Frequently%20Asked%20Questions"
+  },
+  {
+    "id": "1",
+    "title": "ソースコード",
+    "icon": "ic_code",
+    "subtitle": "内容をご確認ください",
+    "url": "https://gitlab.com/AuroraOSS/AuroraStore/"
+  },
+  {
+    "id": "2",
+    "title": "ライセンス",
+    "subtitle": "GNU一般公衆ライセンス v3.0",
+    "icon": "ic_license",
+    "url": "https://gitlab.com/AuroraOSS/AuroraStore/-/blob/master/LICENSE"
+  },
+  {
+    "id": "3",
+    "title": "プライバシーポリシー",
+    "subtitle": "Aurora Storeの個人情報データ取り扱い方針をご確認ください",
+    "icon": "ic_privacy",
+    "url": "https://gitlab.com/AuroraOSS/AuroraStore/-/blob/master/POLICY.md"
+  },
+  {
+    "id": "4",
+    "title": "免責事項",
+    "subtitle": "説明責任と責務",
+    "icon": "ic_disclaimer",
+    "url": "https://gitlab.com/AuroraOSS/AuroraStore/-/blob/master/DISCLAIMER.md"
+  },
+  {
+    "id": "5",
+    "title": "警告 / WARNING",
+    "subtitle": "タップして\"お知らせ\"・\"説明\"・\"利用方法\"をご確認ください",
+    "icon": "ic_disclaimer",
+    "url": "https://ctabwiki.nerrog.net/?neo-aurora"
+  }
+]
