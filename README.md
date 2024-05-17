@@ -1,8 +1,8 @@
-# 重要なお知らせ
+**このレポジトリは[公式Aurora Storeのレポジトリ](https://gitlab.com/AuroraOSS/AuroraStore)ではありません**
 
-**このアプリケーションはまもなくサポートを終了します。公式Aurora Storeの対応がされ次第、リポジトリをアーカイブしてサポートを終了させていただきますのでご了承ください。**
-**サポートが終了した場合はお手数をおかけいたしますが、このアプリケーションをアンインストールして、オリジナルの[Aurora Store](https://gitlab.com/AuroraOSS/AuroraStore/-/releases)をインストールしてください。**
-**ご利用ありがとうございました！**
+**再頒布および改変されたこのアプリケーションのサポートは終了しました。[公式Aurora Store](https://gitlab.com/AuroraOSS/AuroraStore)がデバイスオーナーによるインストール方式をサポートしたためです。**
+
+**このアプリケーションをアンインストールして、オリジナルの[Aurora Store](https://gitlab.com/AuroraOSS/AuroraStore/-/releases)をインストールしてください。**
 
 # Aurora Store
 
